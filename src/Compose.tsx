@@ -1,12 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { User } from "./Api";
+import { ComposeValue, initialComposeValue } from "./MainPage";
 
-type ComposeValue = { text: string, replyToUserId: string }
-
-const initialValue: ComposeValue = {text: "", replyToUserId: ""};
-
-export const Compose = ({onSubmit, userList}: { onSubmit: (value: ComposeValue) => void; userList: User[] }) => {
-  const [composeValue, setComposeValue] = useState<ComposeValue>(initialValue);
+export const Compose = ({
+  value,
+  onChange,
+  onSubmit,
+  userList
+}: {
+  value: ComposeValue,
+  onChange: (value: ComposeValue) => void,
+  onSubmit: (value: ComposeValue) => void;
+  userList: User[]
+}) => {
   const [send, setSend] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -21,13 +27,13 @@ export const Compose = ({onSubmit, userList}: { onSubmit: (value: ComposeValue) 
 
   useEffect(() => {
     (async () => {
-      if (send && composeValue.text.trim()) {
+      if (send && value.text.trim()) {
         setSend(false);
-        onSubmit(composeValue);
-        setComposeValue(initialValue);
+        onSubmit(value);
+        onChange(initialComposeValue);
       }
     })();
-  }, [send, composeValue, onSubmit]);
+  }, [send, value, onChange, onSubmit]);
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.addEventListener("keydown", handleKeydown, false);
@@ -36,17 +42,24 @@ export const Compose = ({onSubmit, userList}: { onSubmit: (value: ComposeValue) 
   }, [inputRef.current]);
 
   const handleChangeComposeValue = (event: any) => {
-    setComposeValue((prev) => ({
-      ...prev,
+    onChange({
+      ...value,
       [event.target.name]: event.target.value,
-    }));
+    });
   };
 
   return (
     <form>
+      <input
+        type="text"
+        name="replyToTextId"
+        placeholder="ツイートへの返信"
+        value={value.replyToTextId}
+        onChange={handleChangeComposeValue}
+      />
       <select
         name="replyToUserId"
-        value={composeValue.replyToUserId}
+        value={value.replyToUserId}
         onChange={handleChangeComposeValue}
       >
         <option value="">-</option>
@@ -61,8 +74,8 @@ export const Compose = ({onSubmit, userList}: { onSubmit: (value: ComposeValue) 
         ref={inputRef}
         placeholder="今なにしてる？"
         rows={4}
-        value={composeValue.text}
-        onChange={e => setComposeValue(prev => ({...prev, text: e.target.value}))}
+        value={value.text}
+        onChange={e => onChange({...value, text: e.target.value})}
       />
       <input type="submit" onClick={(e) => {e.preventDefault();setSend(true);}} value="send" />
     </form>
