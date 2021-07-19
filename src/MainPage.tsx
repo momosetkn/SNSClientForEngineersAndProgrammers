@@ -12,8 +12,8 @@ type Base = {
 
 type Text = Base & {
   text: string;
-  in_reply_to_user_id: string; //返信対象のUserId
-  in_reply_to_text_id: string; //返信対象のTextId
+  in_reply_to_user_id?: string; //返信対象のUserId
+  in_reply_to_text_id?: string; //返信対象のTextId
 }
 
 type User = Base & {
@@ -27,7 +27,7 @@ export const MainPage = () => {
   const [userMap, setUserMap] = useState<Record<string, User>>({});
 
   const reloadLog = () => {
-    fetch(`${end_point}/text/all?$orderby=_created_at%20desc&$limit=20`)
+    fetch(`${end_point}/text/all?$orderby=_created_at%20desc&$limit=60`)
       .then((res) => (res.json()))
       .then(setTexts);
   };
@@ -145,6 +145,10 @@ const Log = ({text, userMap}: { text: Text; userMap: Record<string, User> }) => 
     setInterval(() => setUpdateTimeTrigger(prev => prev + 1), 5_000);
   }, []);
 
+  const getUser = (userId: string) => {
+    return userMap[userId]?.name || `匿名(${userId.slice(0, 2)})`;
+  }
+
   return (
     <div>
       <div>
@@ -154,10 +158,11 @@ const Log = ({text, userMap}: { text: Text; userMap: Record<string, User> }) => 
       </div>
       <div
         title={userMap[text._user_id]?.description || text._user_id}>
-        {userMap[text._user_id]?.name || `匿名(${text._user_id.slice(0, 2)})`}
+        {getUser(text._user_id)}
       </div>
       <div>
         <pre>
+          {text.in_reply_to_user_id ? `@${getUser(text.in_reply_to_user_id)} `: ''}
           {text.text}
         </pre>
       </div>
