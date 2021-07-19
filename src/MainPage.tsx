@@ -10,7 +10,6 @@ export const initialComposeValue: ComposeValue = {text: "", replyToTextId: "", r
 
 export const MainPage = () => {
   const [texts, setTexts] = useState<Text[]>([]);
-  const [confirm, setConfirm] = useState(false);
   const [userList, setUserList] = useState<User[]>([]);
   const [composeValue, setComposeValue] = useState<ComposeValue>(initialComposeValue);
 
@@ -52,28 +51,18 @@ export const MainPage = () => {
   }, []);
 
   return (
-    <>
-      {confirm ? (
-        <div>
-          <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
-          {texts.map(text => (
-            <Log
-              key={text.id}
-              text={text}
-              userMap={userMap}
-              onReplyTo={(x) =>
-                setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
-              }
-            />
-          ))}
-        </div>
-      ) : (
-        <div>
-          あなたはエンジニア・プログラマですか？
-          <button onClick={() => setConfirm(true)}>はい</button>
-        </div>
-      )
-      }
-    </>
+    <div>
+      <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
+      {texts.map(text => (
+        <Log
+          key={text.id}
+          text={text}
+          userMap={userMap}
+          onReplyTo={(x) =>
+            setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
+          }
+        />
+      ))}
+    </div>
   );
 }
