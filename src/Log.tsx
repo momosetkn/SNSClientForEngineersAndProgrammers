@@ -1,8 +1,17 @@
 import React, { useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { User, Text } from "./Api";
+import styled from "styled-components";
 
-export const Log = ({text, userMap}: { text: Text; userMap: Record<string, User> }) => {
+export const Log = ({
+  text,
+  userMap,
+  onReplyTo
+}: {
+  text: Text;
+  userMap: Record<string, User>,
+  onReplyTo: (value:{textId: string; userId: string}) => void
+}) => {
   const [updateTimeTrigger, setUpdateTimeTrigger] = useState(Number.MIN_SAFE_INTEGER);
 
   const time = useMemo(() => {
@@ -57,6 +66,14 @@ export const Log = ({text, userMap}: { text: Text; userMap: Record<string, User>
           {text.text}
         </pre>
       </div>
+      <StyledControlContainer>
+        <button onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}>↩</button>
+      </StyledControlContainer>
     </div>
   );
-}
+};
+
+const StyledControlContainer = styled.div`
+  display: flex;
+`;
+

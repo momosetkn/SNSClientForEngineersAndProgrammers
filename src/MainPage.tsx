@@ -57,7 +57,14 @@ export const MainPage = () => {
         <div>
           <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
           {texts.map(text => (
-            <Log key={text.id} text={text} userMap={userMap}/>
+            <Log
+              key={text.id}
+              text={text}
+              userMap={userMap}
+              onReplyTo={(x) =>
+                setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
+              }
+            />
           ))}
         </div>
       ) : (
