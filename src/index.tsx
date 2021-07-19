@@ -3,13 +3,14 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import reportWebVitals from './reportWebVitals';
+import { MainPage } from "./MainPage";
 
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
       <Switch>
         <Route exact path="/">
-          <>hello</>
+          <MainPage />
         </Route>
       </Switch>
     </BrowserRouter>
