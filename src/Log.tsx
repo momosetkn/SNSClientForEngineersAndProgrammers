@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { User, Text } from "./Api";
-import styled from "styled-components";
+import { faReply } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import './index.css';
 
 export const Log = ({
   text,
@@ -66,14 +68,13 @@ export const Log = ({
           {text.text}
         </pre>
       </div>
-      <StyledControlContainer>
-        <button onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}>↩</button>
-      </StyledControlContainer>
+      <div className="flex">
+        <FontAwesomeIcon
+          className="clickable"
+          icon={faReply}
+          onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}
+        />
+      </div>
     </div>
   );
 };
-
-const StyledControlContainer = styled.div`
-  display: flex;
-`;
-

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Compose } from "./Compose";
 import { end_point, User, Text } from "./Api";
 import {Log} from "./Log";
+import './index.css';
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string }
 
