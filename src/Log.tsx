@@ -75,6 +75,7 @@ export const Log = ({
         <FontAwesomeIcon
           className="clickable"
           icon={faReply}
+          title="reply"
           onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}
         />
       </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { User } from "./Api";
 import { ComposeValue, initialComposeValue } from "./MainPage";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
@@ -19,13 +19,14 @@ export const Compose = ({
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleKeydown = (e: KeyboardEvent) => {
+  const handleKeyup = useCallback((e: KeyboardEvent) => {
     // Ctrl + Enterで送信
-    if (e.ctrlKey && e.keyCode === 13 && !send) {
+    if (e.ctrlKey && e.key === 'Enter' && !send) {
       // ここで送信処理はせず、sendフラグの変更をuseEffectで察知させて、送ることで、古いデータを送らないようにする
       setSend(true);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -38,7 +39,9 @@ export const Compose = ({
   }, [send, value, onChange, onSubmit]);
   useEffect(() => {
     if (inputRef.current) {
-      inputRef.current.addEventListener("keydown", handleKeydown, false);
+      console.log('effect');
+      inputRef.current.removeEventListener("keyup", handleKeyup, false);
+      inputRef.current.addEventListener("keyup", handleKeyup, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputRef.current]);
@@ -86,7 +89,7 @@ export const Compose = ({
       <FontAwesomeIcon
         className="clickable"
         icon={faPaperPlane}
-        title="send"
+        title="post"
         onClick={(e) => {e.preventDefault();setSend(true);}}
       />
     </form>
