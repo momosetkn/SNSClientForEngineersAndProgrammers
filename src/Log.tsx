@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { User, Text, end_point } from "./Api";
-import { faReply } from "@fortawesome/free-solid-svg-icons";
+import { faReply, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
 import styled from "styled-components";
@@ -9,11 +9,13 @@ import styled from "styled-components";
 export const Log = ({
   text,
   userMap,
-  onReplyTo
+  onReplyTo,
+  onClose,
 }: {
   text: Text;
   userMap: Record<string, User>,
   onReplyTo: (value:{textId: string; userId: string}) => void
+  onClose?: () => void
 }) => {
   const [updateTimeTrigger, setUpdateTimeTrigger] = useState(Number.MIN_SAFE_INTEGER);
   const [replyDestination, setReplyDestination] = useState<{
@@ -62,6 +64,10 @@ export const Log = ({
           <time dateTime={time.time} title={time.localizedTime}>
             {time.timeDiff}
           </time>
+          {onClose ?
+            <FontAwesomeIcon className="clickable" icon={faTimesCircle} onClick={onClose}/>
+            : null
+          }
         </div>
       </StyledMeta>
       <div>
@@ -107,7 +113,12 @@ export const Log = ({
         replyDestination.open && replyDestination.text?
           (
             <StyledReplyDestinationText>
-              <Log text={replyDestination.text} userMap={userMap} onReplyTo={onReplyTo} />
+              <Log
+                text={replyDestination.text}
+                userMap={userMap}
+                onReplyTo={onReplyTo}
+                onClose={() => setReplyDestination(prev => ({...prev, open: false}))}
+              />
             </StyledReplyDestinationText>
           )
           : null
