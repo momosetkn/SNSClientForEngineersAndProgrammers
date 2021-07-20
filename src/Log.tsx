@@ -103,7 +103,7 @@ export const Log = ({
       </div>
       <div className="flex mt1">
         <FontAwesomeIcon
-          className="clickable"
+          className="clickable ml1"
           icon={faReply}
           title="reply"
           onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}
@@ -112,7 +112,10 @@ export const Log = ({
       {
         replyDestination.open && replyDestination.text?
           (
-            <StyledReplyDestinationText>
+            <StyledReplyDestinationText
+              x={onClose ? 0 : 8}
+              y={16}
+            >
               <Log
                 text={replyDestination.text}
                 userMap={userMap}
@@ -143,8 +146,9 @@ const StyledText = styled.div`
   padding-top: 2px;
 `;
 
-const StyledReplyDestinationText = styled.div`
+const StyledReplyDestinationText = styled.div<{x: number, y: number}>`
   position: relative;
-  top: 8px;
-  left: 16px;
+  left: ${({x}) => x}px;
+  top: ${({y}) => y}px;
+  margin-bottom: ${({y}) => y}px;
 `;
