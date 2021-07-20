@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { User } from "./Api";
 import { ComposeValue, initialComposeValue } from "./MainPage";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const Compose = ({
   value,
@@ -50,25 +52,29 @@ export const Compose = ({
 
   return (
     <form>
-      <input
-        type="text"
-        name="replyToTextId"
-        placeholder="ツイートへの返信"
-        value={value.replyToTextId}
-        onChange={handleChangeComposeValue}
-      />
-      <select
-        name="replyToUserId"
-        value={value.replyToUserId}
-        onChange={handleChangeComposeValue}
-      >
-        <option value="">-</option>
-        {userList.map(user => (
-          <option key={user.id} value={user.id}>
-            {user.name || `匿名(${user._user_id.slice(0, 2)})`}
-          </option>
-        ))}
-      </select>
+      <div>
+        <input
+          type="text"
+          name="replyToTextId"
+          placeholder="ツイートへの返信"
+          value={value.replyToTextId}
+          onChange={handleChangeComposeValue}
+        />
+      </div>
+      <div>
+        <select
+          name="replyToUserId"
+          value={value.replyToUserId}
+          onChange={handleChangeComposeValue}
+        >
+          <option value="">-</option>
+          {userList.map(user => (
+            <option key={user.id} value={user.id}>
+              {user.name || `匿名(${user._user_id.slice(0, 2)})`}
+            </option>
+          ))}
+        </select>
+      </div>
       <textarea
         name="text"
         ref={inputRef}
@@ -77,7 +83,12 @@ export const Compose = ({
         value={value.text}
         onChange={e => onChange({...value, text: e.target.value})}
       />
-      <input type="submit" onClick={(e) => {e.preventDefault();setSend(true);}} value="send" />
+      <FontAwesomeIcon
+        className="clickable"
+        icon={faPaperPlane}
+        title="send"
+        onClick={(e) => {e.preventDefault();setSend(true);}}
+      />
     </form>
   );
 };

@@ -4,6 +4,7 @@ import { User, Text } from "./Api";
 import { faReply } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
+import styled from "styled-components";
 
 export const Log = ({
   text,
@@ -47,16 +48,18 @@ export const Log = ({
   }
 
   return (
-    <div>
-      <div>
-        <time dateTime={time.time} title={time.localizedTime}>
-          {time.timeDiff}
-        </time>
-      </div>
-      <div
-        title={userMap[text._user_id]?.description || text._user_id}>
-        {getUser(text._user_id)}
-      </div>
+    <StyledMain>
+      <StyledMeta>
+        <div
+          title={userMap[text._user_id]?.description || text._user_id}>
+          {getUser(text._user_id)}
+        </div>
+        <div>
+          <time dateTime={time.time} title={time.localizedTime}>
+            {time.timeDiff}
+          </time>
+        </div>
+      </StyledMeta>
       <div>
         <div>
           {text.in_reply_to_text_id ? `ReplyTo: ${text.in_reply_to_text_id} `: ''}
@@ -64,17 +67,33 @@ export const Log = ({
         <div>
           {text.in_reply_to_user_id ? `@${getUser(text.in_reply_to_user_id)} `: ''}
         </div>
-        <pre>
+        <StyledText>
           {text.text}
-        </pre>
+        </StyledText>
       </div>
-      <div className="flex">
+      <div className="flex mt1">
         <FontAwesomeIcon
           className="clickable"
           icon={faReply}
           onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}
         />
       </div>
-    </div>
+    </StyledMain>
   );
 };
+
+const StyledMain = styled.div`
+  border: 1px solid #ccc;
+  padding: 8px;
+`;
+
+const StyledMeta = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const StyledText = styled.div`
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  padding-top: 2px;
+`;

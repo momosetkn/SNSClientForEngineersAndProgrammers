@@ -19,3 +19,7 @@ code {
 .clickable:hover {
   cursor: pointer;
 }
+
+.mt1 {
+  margin-top: 8px;
+}
