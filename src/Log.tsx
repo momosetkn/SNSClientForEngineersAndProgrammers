@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { useState } from "react";
-import { User, Text } from "./Api";
+import { User, Text, end_point } from "./Api";
 import { faReply } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
@@ -16,6 +16,10 @@ export const Log = ({
   onReplyTo: (value:{textId: string; userId: string}) => void
 }) => {
   const [updateTimeTrigger, setUpdateTimeTrigger] = useState(Number.MIN_SAFE_INTEGER);
+  const [replyDestination, setReplyDestination] = useState<{
+    text?: Text;
+    open: boolean;
+  }>({open: false});
 
   const time = useMemo(() => {
     const now = new Date();
@@ -45,7 +49,7 @@ export const Log = ({
 
   const getUser = (userId: string) => {
     return userMap[userId]?.name || `匿名(${userId.slice(0, 2)})`;
-  }
+  };
 
   return (
     <StyledMain>
@@ -61,7 +65,27 @@ export const Log = ({
         </div>
       </StyledMeta>
       <div>
-        <div>
+        <div
+          onClick={async () => {
+            if(!text.in_reply_to_text_id) return;
+            if(replyDestination.text){
+              setReplyDestination(prev => ({
+                ...prev,
+                open: true,
+              }))
+              return;
+            }
+            await fetch(`${end_point}/text/${text.in_reply_to_text_id}`)
+              .then((res) => (res.json()))
+              .then(x => {
+                setReplyDestination({
+                  text: x,
+                  open: true,
+                })
+              });
+          }
+        }
+          >
           {text.in_reply_to_text_id ? `ReplyTo: ${text.in_reply_to_text_id} `: ''}
         </div>
         <div>
@@ -79,6 +103,15 @@ export const Log = ({
           onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}
         />
       </div>
+      {
+        replyDestination.open && replyDestination.text?
+          (
+            <StyledReplyDestinationText>
+              <Log text={replyDestination.text} userMap={userMap} onReplyTo={onReplyTo} />
+            </StyledReplyDestinationText>
+          )
+          : null
+      }
     </StyledMain>
   );
 };
@@ -97,4 +130,10 @@ const StyledText = styled.div`
   word-wrap: break-word;
   white-space: pre-wrap;
   padding-top: 2px;
+`;
+
+const StyledReplyDestinationText = styled.div`
+  position: relative;
+  top: 8px;
+  left: 16px;
 `;
