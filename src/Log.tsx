@@ -147,8 +147,6 @@ const StyledText = styled.div`
 `;
 
 const StyledReplyDestinationText = styled.div<{x: number, y: number}>`
-  position: relative;
-  left: ${({x}) => x}px;
-  top: ${({y}) => y}px;
-  margin-bottom: ${({y}) => y}px;
+  margin-left: ${({x}) => x}px;
+  margin-top: ${({y}) => y}px;
 `;
