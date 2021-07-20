@@ -65,7 +65,7 @@ export const Log = ({
             {time.timeDiff}
           </time>
           {onClose ?
-            <FontAwesomeIcon className="clickable" icon={faTimesCircle} onClick={onClose}/>
+            <FontAwesomeIcon className="clickable ml1" icon={faTimesCircle} onClick={onClose}/>
             : null
           }
         </div>
@@ -103,7 +103,7 @@ export const Log = ({
       </div>
       <div className="flex mt1">
         <FontAwesomeIcon
-          className="clickable ml1"
+          className="clickable"
           icon={faReply}
           title="reply"
           onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}
