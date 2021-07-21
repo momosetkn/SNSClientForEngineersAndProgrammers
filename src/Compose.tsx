@@ -1,5 +1,5 @@
-import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import { end_point, User } from "./Api";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { User } from "./Api";
 import { ComposeValue, initialComposeValue } from "./MainPage";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -56,26 +56,6 @@ export const Compose = ({
     });
   };
 
-  const handleChangeImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const convertBase64Promise = new Promise((r) => {
-      const fr = new FileReader();
-      fr.onload = (e) => {
-        r(e.target?.result);
-      };
-      fr.readAsDataURL(file);
-    });
-    const convertBase64 = (await convertBase64Promise) as any as string;
-
-    await fetch(`${end_point}/image`, {
-      method: "POST",
-      headers: {Authorization: "evolution"},
-      body: convertBase64,
-    }).then((res) => res.json()).then(x => console.log(x));
-  };
-
   return (
     <StyledMain>
       <form>
@@ -99,11 +79,6 @@ export const Compose = ({
               </option>
             ))}
           </select>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleChangeImageFile}
-          />
         </div>
         <textarea
           name="text"

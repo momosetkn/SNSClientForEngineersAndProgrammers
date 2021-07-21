@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, { ChangeEvent, useContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { User, Text, end_point } from "./Api";
-import { faReply, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import { faImages, faReply, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
 import styled from "styled-components";
@@ -57,6 +57,31 @@ export const Log = ({
 
   const handleReplyTo = (x: { textId: string, userId: string }) => {
     setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
+  };
+
+  const handleChangeImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const convertBase64Promise = new Promise((r) => {
+      const fr = new FileReader();
+      fr.onload = (e) => {
+        r(e.target?.result);
+      };
+      fr.readAsDataURL(file);
+    });
+    const base64 = (await convertBase64Promise) as any as string;
+
+    const params = {
+      base64,
+      bind_text_id: text.id,
+    }
+
+    await fetch(`${end_point}/image`, {
+      method: "POST",
+      headers: {Authorization: "evolution"},
+      body: JSON.stringify(params),
+    }).then((res) => res.json()).then(x => console.log(x));
   };
 
   return (
@@ -120,6 +145,20 @@ export const Log = ({
           title="reply"
           onClick={() => handleReplyTo({textId: text.id, userId: text._user_id})}
         />
+        <label htmlFor={`image_upload_${text.id}`}>
+          <FontAwesomeIcon
+            className="clickable ml2"
+            icon={faImages}
+            title="reply"
+          />
+          <input
+            id={`image_upload_${text.id}`}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleChangeImageFile}
+          />
+        </label>
       </div>
       {
         replyDestination.open && replyDestination.text?
