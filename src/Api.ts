@@ -13,6 +13,11 @@ export type Text = Base & {
   in_reply_to_text_id?: string; //返信対象のTextId
 }
 
+export type Image = Base & {
+  base64: string;
+  bind_text_id: string;
+}
+
 export type User = Base & {
   description: string;
   name: string;

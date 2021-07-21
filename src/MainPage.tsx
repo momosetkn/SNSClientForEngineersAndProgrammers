@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { Compose, composeHeight } from "./Compose";
-import { end_point, User, Text } from "./Api";
+import { end_point, User, Text, Image } from "./Api";
 import {Log} from "./Log";
 import './index.css';
 import styled from "styled-components";
@@ -14,6 +14,8 @@ export const ComposeContext =
   createContext<{ composeValue: ComposeValue, setComposeValue: (value: ComposeValue) => void }>(
     {composeValue: initialComposeValue, setComposeValue: (value: ComposeValue) => {}}
   );
+
+export const ImageMapContext = createContext<Record<string, Image>>({});
 
 const lists = [
   {
@@ -32,6 +34,7 @@ const lists = [
 
 export const MainPage = () => {
   const [userList, setUserList] = useState<User[]>([]);
+  const [imageList, setImageList] = useState<Image[]>([]);
   const [composeValue, setComposeValue] = useState<ComposeValue>(initialComposeValue);
   const [loadLogTrigger, setLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
 
@@ -40,10 +43,21 @@ export const MainPage = () => {
     [cur.id]: cur
   }), {}), [userList]);
 
+  const imageMap: Record<string, Image> = useMemo(() => imageList.reduce((acc: any, cur: { bind_text_id: any; }) => ({
+    ...acc,
+    [cur.bind_text_id]: cur
+  }), {}), [imageList]);
+
   const loadUser = () => {
     fetch(`${end_point}/user/all`)
       .then((res) => (res.json()))
       .then(setUserList);
+  };
+
+  const loadImage = () => {
+    fetch(`${end_point}/image/all`)
+      .then((res) => (res.json()))
+      .then(setImageList);
   };
 
   const handleSubmit = async ({text, replyToUserId, replyToTextId}: { text: string, replyToUserId?: string, replyToTextId?: string} ) => {
@@ -59,30 +73,37 @@ export const MainPage = () => {
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
     }).then((res) => res.json()).then(x => console.log(x));
+
+    loadImage();
     setLoadLogTrigger(prev => prev+1);
   };
 
   useEffect(() => {
     loadUser();
     setInterval(loadUser, 60_000 * 10);//10分
+
+    loadImage();
+    setInterval(loadUser, 10_000);
   }, []);
 
   return (
     <div>
       <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
-      <ComposeContext.Provider value={{composeValue, setComposeValue}}>
-        <div className="flex">
-          {lists.map(list => (
-            <Logs
-              key={list.name}
-              name={list.name}
-              query={list.query}
-              userMap={userMap}
-              loadLogTrigger={loadLogTrigger}
-            />
-          ))}
-        </div>
-      </ComposeContext.Provider>
+      <ImageMapContext.Provider value={imageMap}>
+        <ComposeContext.Provider value={{composeValue, setComposeValue}}>
+          <div className="flex">
+            {lists.map(list => (
+              <Logs
+                key={list.name}
+                name={list.name}
+                query={list.query}
+                userMap={userMap}
+                loadLogTrigger={loadLogTrigger}
+              />
+            ))}
+          </div>
+        </ComposeContext.Provider>
+      </ImageMapContext.Provider>
     </div>
   );
 };

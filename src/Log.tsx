@@ -5,7 +5,7 @@ import { faReply, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
 import styled from "styled-components";
-import { ComposeContext } from "./MainPage";
+import { ComposeContext, ImageMapContext } from "./MainPage";
 
 export const Log = ({
   text,
@@ -23,6 +23,7 @@ export const Log = ({
   }>({open: false});
 
   const { composeValue, setComposeValue } = useContext(ComposeContext);
+  const imageMap = useContext(ImageMapContext);
 
   const time = useMemo(() => {
     const now = new Date();
@@ -106,6 +107,12 @@ export const Log = ({
           {text.text}
         </StyledText>
       </div>
+      {imageMap[text.id] ?
+        <div>
+          <img src={imageMap[text.id].base64} alt={text.text} />.
+        </div>
+        : null
+      }
       <div className="flex mt1">
         <FontAwesomeIcon
           className="clickable"
