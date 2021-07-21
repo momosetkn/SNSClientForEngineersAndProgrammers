@@ -33,6 +33,7 @@ const lists = [
 export const MainPage = () => {
   const [userList, setUserList] = useState<User[]>([]);
   const [composeValue, setComposeValue] = useState<ComposeValue>(initialComposeValue);
+  const [loadLogTrigger, setLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
 
   const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: { id: any; }) => ({
     ...acc,
@@ -58,8 +59,7 @@ export const MainPage = () => {
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
     }).then((res) => res.json()).then(x => console.log(x));
-    // TODO: 発言後にリロードさせる
-    // loadLog();
+    setLoadLogTrigger(prev => prev++);
   };
 
   useEffect(() => {
@@ -73,7 +73,13 @@ export const MainPage = () => {
       <ComposeContext.Provider value={{composeValue, setComposeValue}}>
         <div className="flex">
           {lists.map(list => (
-            <Logs key={list.name} name={list.name} query={list.query} userMap={userMap}/>
+            <Logs
+              key={list.name}
+              name={list.name}
+              query={list.query}
+              userMap={userMap}
+              loadLogTrigger={loadLogTrigger}
+            />
           ))}
         </div>
       </ComposeContext.Provider>
@@ -85,10 +91,12 @@ const Logs = ({
   name,
   query,
   userMap,
+  loadLogTrigger,
 } : {
   name: string,
   query: string,
   userMap: Record<string, User>,
+  loadLogTrigger?: number,
 }) => {
   const [texts, setTexts] = useState<Text[]>([]);
 
@@ -103,6 +111,8 @@ const Logs = ({
     setInterval(loadLog, 10_000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => loadLog(), [loadLogTrigger]);
 
   return (
     <StyledLogs>
