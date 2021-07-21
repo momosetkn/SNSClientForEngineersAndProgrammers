@@ -88,6 +88,26 @@ export const Log = ({
     loadImages();
   };
 
+  const handleClickReply = async () => {
+      if(!text.in_reply_to_text_id) return;
+
+      if(replyDestination.text){
+        setReplyDestination(prev => ({
+          ...prev,
+          open: true,
+        }))
+        return;
+      }
+      await fetch(`${end_point}/text/${text.in_reply_to_text_id}`)
+        .then((res) => (res.json()))
+        .then(x => {
+          setReplyDestination({
+            text: x,
+            open: true,
+          })
+        });
+    };
+
   return (
     <StyledMain>
       <StyledMeta>
@@ -106,27 +126,7 @@ export const Log = ({
         </div>
       </StyledMeta>
       <div>
-        <div
-          onClick={async () => {
-            if(!text.in_reply_to_text_id) return;
-            if(replyDestination.text){
-              setReplyDestination(prev => ({
-                ...prev,
-                open: true,
-              }))
-              return;
-            }
-            await fetch(`${end_point}/text/${text.in_reply_to_text_id}`)
-              .then((res) => (res.json()))
-              .then(x => {
-                setReplyDestination({
-                  text: x,
-                  open: true,
-                })
-              });
-          }
-        }
-          >
+        <div onClick={handleClickReply} >
           {text.in_reply_to_text_id ? `ReplyTo: ${text.in_reply_to_text_id} `: ''}
         </div>
         <div>
@@ -139,7 +139,11 @@ export const Log = ({
       {imageMap[text.id]?.length ?
         imageMap[text.id].map(image => (
           <div>
-            <img src={image.base64} alt={text.text} />.
+            <img
+              src={image.base64}
+              alt={`${getUser(text._user_id)}さんが貼り付けた画像`}
+              title={`${getUser(image._user_id)}さんが貼り付けた画像`}
+            />.
           </div>
         ))
         : null
