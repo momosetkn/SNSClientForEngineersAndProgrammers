@@ -60,28 +60,29 @@ export const Log = ({
   };
 
   const handleChangeImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    if (!e.target.files) return;
 
-    const convertBase64Promise = new Promise((r) => {
-      const fr = new FileReader();
-      fr.onload = (e) => {
-        r(e.target?.result);
-      };
-      fr.readAsDataURL(file);
-    });
-    const base64 = (await convertBase64Promise) as any as string;
+    const fileUploader = async (file: File) => {
+      const convertBase64Promise = new Promise((r) => {
+        const fr = new FileReader();
+        fr.onload = (e) => {
+          r(e.target?.result);
+        };
+        fr.readAsDataURL(file);
+      });
+      const base64 = (await convertBase64Promise) as any as string;
+      const params = {
+        base64,
+        bind_text_id: text.id,
+      }
+      await fetch(`${end_point}/image`, {
+        method: "POST",
+        headers: {Authorization: "evolution"},
+        body: JSON.stringify(params),
+      }).then((res) => res.json()).then(x => console.log(x));
+    };
 
-    const params = {
-      base64,
-      bind_text_id: text.id,
-    }
-
-    await fetch(`${end_point}/image`, {
-      method: "POST",
-      headers: {Authorization: "evolution"},
-      body: JSON.stringify(params),
-    }).then((res) => res.json()).then(x => console.log(x));
+    await Promise.all(Array.from(e.target.files).map(fileUploader));
   };
 
   return (
@@ -149,12 +150,13 @@ export const Log = ({
           <FontAwesomeIcon
             className="clickable ml2"
             icon={faImages}
-            title="reply"
+            title="images"
           />
           <input
             id={`image_upload_${text.id}`}
             type="file"
             accept="image/*"
+            multiple
             hidden
             onChange={handleChangeImageFile}
           />
