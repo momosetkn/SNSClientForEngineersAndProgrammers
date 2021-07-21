@@ -3,6 +3,9 @@ import { User } from "./Api";
 import { ComposeValue, initialComposeValue } from "./MainPage";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import styled from "styled-components";
+
+export const composeHeight = '100px';
 
 export const Compose = ({
   value,
@@ -54,44 +57,49 @@ export const Compose = ({
   };
 
   return (
-    <form>
-      <div>
-        <input
-          type="text"
-          name="replyToTextId"
-          placeholder="ツイートへの返信"
-          value={value.replyToTextId}
-          onChange={handleChangeComposeValue}
+    <StyledMain>
+      <form>
+        <div>
+          <input
+            type="text"
+            name="replyToTextId"
+            placeholder="ツイートへの返信"
+            value={value.replyToTextId}
+            onChange={handleChangeComposeValue}
+          />
+          <select
+            name="replyToUserId"
+            value={value.replyToUserId}
+            onChange={handleChangeComposeValue}
+          >
+            <option value="">-</option>
+            {userList.map(user => (
+              <option key={user.id} value={user.id}>
+                {user.name || `匿名(${user._user_id.slice(0, 2)})`}
+              </option>
+            ))}
+          </select>
+        </div>
+        <textarea
+          name="text"
+          ref={inputRef}
+          placeholder="今なにしてる？"
+          rows={4}
+          cols={50}
+          value={value.text}
+          onChange={e => onChange({...value, text: e.target.value})}
         />
-      </div>
-      <div>
-        <select
-          name="replyToUserId"
-          value={value.replyToUserId}
-          onChange={handleChangeComposeValue}
-        >
-          <option value="">-</option>
-          {userList.map(user => (
-            <option key={user.id} value={user.id}>
-              {user.name || `匿名(${user._user_id.slice(0, 2)})`}
-            </option>
-          ))}
-        </select>
-      </div>
-      <textarea
-        name="text"
-        ref={inputRef}
-        placeholder="今なにしてる？"
-        rows={4}
-        value={value.text}
-        onChange={e => onChange({...value, text: e.target.value})}
-      />
-      <FontAwesomeIcon
-        className="clickable"
-        icon={faPaperPlane}
-        title="post"
-        onClick={(e) => {e.preventDefault();setSend(true);}}
-      />
-    </form>
+        <FontAwesomeIcon
+          className="clickable"
+          icon={faPaperPlane}
+          title="post"
+          onClick={(e) => {e.preventDefault();setSend(true);}}
+        />
+      </form>
+    </StyledMain>
   );
 };
+
+const StyledMain = styled.div`
+  height: ${composeHeight};
+`;

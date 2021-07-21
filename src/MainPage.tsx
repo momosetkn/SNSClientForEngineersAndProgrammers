@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
-import { Compose } from "./Compose";
+import { Compose, composeHeight } from "./Compose";
 import { end_point, User, Text } from "./Api";
 import {Log} from "./Log";
 import './index.css';
@@ -122,4 +122,6 @@ const Logs = ({
 
 const StyledLogs = styled.div`
   width: 320px;
+  height: calc(100vh - ${composeHeight});
+  overflow-y: auto;
 `;
