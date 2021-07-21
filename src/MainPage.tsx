@@ -1,16 +1,36 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { createContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { Compose } from "./Compose";
 import { end_point, User, Text } from "./Api";
 import {Log} from "./Log";
 import './index.css';
+import styled from "styled-components";
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string }
 
 export const initialComposeValue: ComposeValue = {text: "", replyToTextId: "", replyToUserId: ""};
 
+export const ComposeContext =
+  createContext<{ composeValue: ComposeValue, setComposeValue: (value: ComposeValue) => void }>(
+    {composeValue: initialComposeValue, setComposeValue: (value: ComposeValue) => {}}
+  );
+
+const lists = [
+  {
+    name: 'All',
+    query: encodeURI("$filter=_user_id ne 'd9ecf9245defb6b07cb86fe92a6fde9e735fc9f9'&$orderby=_created_at desc&$limit=20"),
+  },
+  {
+    name: 'To me',
+    query: encodeURI("$filter=in_reply_to_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc&$limit=20")
+  },
+  {
+    name: 'Self',
+    query: encodeURI("$filter=_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc&$limit=20")
+  },
+]
+
 export const MainPage = () => {
-  const [texts, setTexts] = useState<Text[]>([]);
   const [userList, setUserList] = useState<User[]>([]);
   const [composeValue, setComposeValue] = useState<ComposeValue>(initialComposeValue);
 
@@ -18,12 +38,6 @@ export const MainPage = () => {
     ...acc,
     [cur.id]: cur
   }), {}), [userList]);
-
-  const loadLog = () => {
-    fetch(`${end_point}/text/all?$orderby=_created_at%20desc&$limit=60`)
-      .then((res) => (res.json()))
-      .then(setTexts);
-  };
 
   const loadUser = () => {
     fetch(`${end_point}/user/all`)
@@ -44,13 +58,11 @@ export const MainPage = () => {
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
     }).then((res) => res.json()).then(x => console.log(x));
-    loadLog();
+    // TODO: 発言後にリロードさせる
+    // loadLog();
   };
 
   useEffect(() => {
-    loadLog();
-    setInterval(loadLog, 30_000);
-
     loadUser();
     setInterval(loadUser, 60_000 * 10);//10分
   }, []);
@@ -58,16 +70,56 @@ export const MainPage = () => {
   return (
     <div>
       <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
+      <ComposeContext.Provider value={{composeValue, setComposeValue}}>
+        <div className="flex">
+          {lists.map(list => (
+            <Logs key={list.name} name={list.name} query={list.query} userMap={userMap}/>
+          ))}
+        </div>
+      </ComposeContext.Provider>
+    </div>
+  );
+};
+
+const Logs = ({
+  name,
+  query,
+  userMap,
+} : {
+  name: string,
+  query: string,
+  userMap: Record<string, User>,
+}) => {
+  const [texts, setTexts] = useState<Text[]>([]);
+
+  const loadLog = () => {
+    fetch(`${end_point}/text/all?${query}`)
+      .then((res) => (res.json()))
+      .then(setTexts);
+  };
+
+  useEffect(() => {
+    loadLog();
+    setInterval(loadLog, 10_000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <StyledLogs>
+      <h3 className="m0">
+        {name}
+      </h3>
       {texts.map(text => (
         <Log
           key={text.id}
           text={text}
           userMap={userMap}
-          onReplyTo={(x) =>
-            setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
-          }
         />
       ))}
-    </div>
+    </StyledLogs>
   );
 }
+
+const StyledLogs = styled.div`
+  width: 320px;
+`;

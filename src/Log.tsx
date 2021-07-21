@@ -1,20 +1,19 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { User, Text, end_point } from "./Api";
 import { faReply, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
 import styled from "styled-components";
+import { ComposeContext } from "./MainPage";
 
 export const Log = ({
   text,
   userMap,
-  onReplyTo,
   onClose,
 }: {
   text: Text;
   userMap: Record<string, User>,
-  onReplyTo: (value:{textId: string; userId: string}) => void
   onClose?: () => void
 }) => {
   const [updateTimeTrigger, setUpdateTimeTrigger] = useState(Number.MIN_SAFE_INTEGER);
@@ -22,6 +21,8 @@ export const Log = ({
     text?: Text;
     open: boolean;
   }>({open: false});
+
+  const { composeValue, setComposeValue } = useContext(ComposeContext);
 
   const time = useMemo(() => {
     const now = new Date();
@@ -51,6 +52,10 @@ export const Log = ({
 
   const getUser = (userId: string) => {
     return userMap[userId]?.name || `匿名(${userId.slice(0, 2)})`;
+  };
+
+  const handleReplyTo = (x: { textId: string, userId: string }) => {
+    setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
   };
 
   return (
@@ -106,7 +111,7 @@ export const Log = ({
           className="clickable"
           icon={faReply}
           title="reply"
-          onClick={() => onReplyTo({textId: text.id, userId: text._user_id})}
+          onClick={() => handleReplyTo({textId: text.id, userId: text._user_id})}
         />
       </div>
       {
@@ -119,7 +124,6 @@ export const Log = ({
               <Log
                 text={replyDestination.text}
                 userMap={userMap}
-                onReplyTo={onReplyTo}
                 onClose={() => setReplyDestination(prev => ({...prev, open: false}))}
               />
             </StyledReplyDestinationText>
