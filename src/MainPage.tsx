@@ -19,10 +19,16 @@ export const MainPage = () => {
     [cur.id]: cur
   }), {}), [userList]);
 
-  const reloadLog = () => {
+  const loadLog = () => {
     fetch(`${end_point}/text/all?$orderby=_created_at%20desc&$limit=60`)
       .then((res) => (res.json()))
       .then(setTexts);
+  };
+
+  const loadUser = () => {
+    fetch(`${end_point}/user/all`)
+      .then((res) => (res.json()))
+      .then(setUserList);
   };
 
   const handleSubmit = async ({text, replyToUserId, replyToTextId}: { text: string, replyToUserId?: string, replyToTextId?: string} ) => {
@@ -38,19 +44,15 @@ export const MainPage = () => {
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
     }).then((res) => res.json()).then(x => console.log(x));
-    reloadLog();
+    loadLog();
   };
 
   useEffect(() => {
-    reloadLog();
-    setInterval(reloadLog, 30_000);
+    loadLog();
+    setInterval(loadLog, 30_000);
 
-    (async () => {
-      // @ts-ignore
-      await fetch(`${end_point}/user/all`)
-        .then((res) => (res.json()))
-        .then(setUserList);
-    })()
+    loadUser();
+    setInterval(loadUser, 60_000 * 10);//10分
   }, []);
 
   return (
