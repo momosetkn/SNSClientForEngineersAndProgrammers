@@ -15,7 +15,7 @@ export const ComposeContext =
     {composeValue: initialComposeValue, setComposeValue: (value: ComposeValue) => {}}
   );
 
-export const ImageMapContext = createContext<Record<string, Image>>({});
+export const ImageMapContext = createContext<Record<string, Image[]>>({});
 
 const lists = [
   {
@@ -43,9 +43,9 @@ export const MainPage = () => {
     [cur.id]: cur
   }), {}), [userList]);
 
-  const imageMap: Record<string, Image> = useMemo(() => imageList.reduce((acc: any, cur: { bind_text_id: any; }) => ({
+  const imageMap: Record<string, Image[]> = useMemo(() => imageList.reduce((acc: any, cur: Image) => ({
     ...acc,
-    [cur.bind_text_id]: cur
+    [cur.bind_text_id]: [...(acc[cur.bind_text_id] || []), cur],
   }), {}), [imageList]);
 
   const loadUser = () => {

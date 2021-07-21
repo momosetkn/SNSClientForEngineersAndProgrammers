@@ -133,10 +133,12 @@ export const Log = ({
           {text.text}
         </StyledText>
       </div>
-      {imageMap[text.id] ?
-        <div>
-          <img src={imageMap[text.id].base64} alt={text.text} />.
-        </div>
+      {imageMap[text.id]?.length ?
+        imageMap[text.id].map(image => (
+          <div>
+            <img src={image.base64} alt={text.text} />.
+          </div>
+        ))
         : null
       }
       <div className="flex mt1">
