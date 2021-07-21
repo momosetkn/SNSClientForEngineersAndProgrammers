@@ -59,7 +59,7 @@ export const MainPage = () => {
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
     }).then((res) => res.json()).then(x => console.log(x));
-    setLoadLogTrigger(prev => prev++);
+    setLoadLogTrigger(prev => prev+1);
   };
 
   useEffect(() => {
