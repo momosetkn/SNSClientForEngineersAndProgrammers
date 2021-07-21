@@ -31,10 +31,12 @@ export const MainPage = () => {
       ...(replyToUserId ? {in_reply_to_user_id: replyToUserId}: {}),
       ...(replyToTextId ? {in_reply_to_text_id: replyToTextId}: {}),
     };
+    // 以下コードにて、'を"へ置換してるっぽいので、エスケープさせる（\"と認識させて、文字列の終端と認識されちゃうのを防止）
+    // https://github.com/HawkClaws/versatileapi/blob/6f7c8db356455f890662b525106d2e1270fa58e8/versatileapi/src/main/java/com/flex/versatileapi/service/VersatileService.java#L154
     await fetch(`${end_point}/text`, {
       method: "POST",
       headers: {Authorization: "HelloWorld"},
-      body: JSON.stringify(params)
+      body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
     }).then((res) => res.json()).then(x => console.log(x));
     reloadLog();
   };
