@@ -17,6 +17,8 @@ export const ComposeContext =
 
 export const ImageMapContext = createContext<Record<string, Image[]>>({});
 
+export const LoadImagesContext = createContext<() => void>(() => {});
+
 const lists = [
   {
     name: 'All',
@@ -54,7 +56,7 @@ export const MainPage = () => {
       .then(setUserList);
   };
 
-  const loadImage = () => {
+  const loadImages = () => {
     fetch(`${end_point}/image/all`)
       .then((res) => (res.json()))
       .then(setImageList);
@@ -74,7 +76,7 @@ export const MainPage = () => {
       body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
     }).then((res) => res.json()).then(x => console.log(x));
 
-    loadImage();
+    loadImages();
     setLoadLogTrigger(prev => prev+1);
   };
 
@@ -82,28 +84,30 @@ export const MainPage = () => {
     loadUser();
     setInterval(loadUser, 60_000 * 10);//10分
 
-    loadImage();
-    setInterval(loadUser, 10_000);
+    loadImages();
+    setInterval(loadImages, 10_000);
   }, []);
 
   return (
     <div>
       <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
-      <ImageMapContext.Provider value={imageMap}>
-        <ComposeContext.Provider value={{composeValue, setComposeValue}}>
-          <div className="flex">
-            {lists.map(list => (
-              <Logs
-                key={list.name}
-                name={list.name}
-                query={list.query}
-                userMap={userMap}
-                loadLogTrigger={loadLogTrigger}
-              />
-            ))}
-          </div>
-        </ComposeContext.Provider>
-      </ImageMapContext.Provider>
+      <LoadImagesContext.Provider value={loadImages}>
+        <ImageMapContext.Provider value={imageMap}>
+          <ComposeContext.Provider value={{composeValue, setComposeValue}}>
+            <div className="flex">
+              {lists.map(list => (
+                <Logs
+                  key={list.name}
+                  name={list.name}
+                  query={list.query}
+                  userMap={userMap}
+                  loadLogTrigger={loadLogTrigger}
+                />
+              ))}
+            </div>
+          </ComposeContext.Provider>
+        </ImageMapContext.Provider>
+      </LoadImagesContext.Provider>
     </div>
   );
 };

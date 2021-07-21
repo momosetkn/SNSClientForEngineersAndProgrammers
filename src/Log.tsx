@@ -5,7 +5,7 @@ import { faImages, faReply, faTimesCircle } from "@fortawesome/free-solid-svg-ic
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
 import styled from "styled-components";
-import { ComposeContext, ImageMapContext } from "./MainPage";
+import { ComposeContext, ImageMapContext, LoadImagesContext } from "./MainPage";
 
 export const Log = ({
   text,
@@ -24,6 +24,7 @@ export const Log = ({
 
   const { composeValue, setComposeValue } = useContext(ComposeContext);
   const imageMap = useContext(ImageMapContext);
+  const loadImages = useContext(LoadImagesContext);
 
   const time = useMemo(() => {
     const now = new Date();
@@ -83,6 +84,8 @@ export const Log = ({
     };
 
     await Promise.all(Array.from(e.target.files).map(fileUploader));
+
+    loadImages();
   };
 
   return (
