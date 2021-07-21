@@ -112,7 +112,9 @@ const Logs = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => loadLog(), [loadLogTrigger]);
+  useEffect(() => loadLog(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [loadLogTrigger]);
 
   return (
     <StyledLogs>
