@@ -90,7 +90,7 @@ export const MainPage = () => {
   }, []);
 
   return (
-    <div>
+    <StyledMain>
       <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
       <LoadImagesContext.Provider value={loadImages}>
         <ImageMapContext.Provider value={imageMap}>
@@ -109,9 +109,15 @@ export const MainPage = () => {
           </ComposeContext.Provider>
         </ImageMapContext.Provider>
       </LoadImagesContext.Provider>
-    </div>
+    </StyledMain>
   );
 };
+
+const StyledMain = styled.div`
+  ::-webkit-scrollbar {
+    display:none;
+  }
+`;
 
 const Logs = ({
   name,
@@ -144,22 +150,33 @@ const Logs = ({
 
   return (
     <StyledLogs>
-      <h3 className="m0">
+      <StyledLogsTitle>
         {name}
-      </h3>
-      {texts.map(text => (
-        <Log
-          key={text.id}
-          text={text}
-          userMap={userMap}
-        />
-      ))}
+      </StyledLogsTitle>
+      <StyledTexts>
+        {texts.map(text => (
+          <Log
+            key={text.id}
+            text={text}
+            userMap={userMap}
+          />
+        ))}
+      </StyledTexts>
     </StyledLogs>
   );
 }
 
 const StyledLogs = styled.div`
   width: 320px;
-  height: calc(100vh - ${composeHeight});
+`;
+
+const styledLogsTitleHeight = 22;
+
+const StyledLogsTitle = styled.div`
+  height: ${styledLogsTitleHeight}px;
+`;
+
+const StyledTexts = styled.div`
+  height: calc(100vh - ${composeHeight + styledLogsTitleHeight}px);
   overflow-y: auto;
 `;

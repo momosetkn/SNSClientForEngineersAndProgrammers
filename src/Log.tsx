@@ -106,9 +106,9 @@ export const Log = ({
         </div>
       </StyledMeta>
       <div>
-        <div onClick={handleClickReply} >
-          {text.in_reply_to_text_id ? `ReplyTo: ${text.in_reply_to_text_id} `: ''}
-        </div>
+        <StyledReplyTo onClick={handleClickReply} >
+          {text.in_reply_to_text_id ? `To: ${text.in_reply_to_text_id} `: ''}
+        </StyledReplyTo>
         <div>
           {text.in_reply_to_user_id ? `@${getUser(text.in_reply_to_user_id)} `: ''}
         </div>
@@ -119,7 +119,7 @@ export const Log = ({
       {imageMap[text.id]?.length ?
         imageMap[text.id].map(image => (
           <div>
-            <img
+            <StyledImg
               src={image.base64}
               alt={`${getUser(text._user_id)}さんが貼り付けた画像`}
               title={`${getUser(image._user_id)}さんが貼り付けた画像`}
@@ -181,10 +181,20 @@ const StyledMeta = styled.div`
   justify-content: space-between;
 `;
 
+const StyledReplyTo = styled.div`
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+`;
+
 const StyledText = styled.div`
   word-wrap: break-word;
   white-space: pre-wrap;
   padding-top: 2px;
+`;
+
+const StyledImg = styled.img`
+  width: 100%;
 `;
 
 const StyledReplyDestinationText = styled.div<{x: number, y: number}>`

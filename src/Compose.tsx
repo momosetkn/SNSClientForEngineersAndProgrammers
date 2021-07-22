@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import { DragDropOverlay } from "./DragDropOverlay";
 
-export const composeHeight = '100px';
+export const composeHeight = 100;
 
 export const Compose = ({
   value,
@@ -124,7 +124,7 @@ export const Compose = ({
 };
 
 const StyledMain = styled.div`
-  height: ${composeHeight};
+  height: ${composeHeight}px;
 `;
 
 const StyledTextCounter = styled.div<{error: boolean}>`
