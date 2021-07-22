@@ -64,7 +64,7 @@ export const Compose = ({
   return (
     <StyledMain>
       <form>
-        <div>
+        <div className="flex">
           <input
             type="text"
             name="replyToTextId"
@@ -84,6 +84,9 @@ export const Compose = ({
               </option>
             ))}
           </select>
+          <StyledTextCounter error={value.text.trim().length > 280}>
+            {`${value.text.trim().length}/280`}
+          </StyledTextCounter>
         </div>
         <div className="flex">
           <textarea
@@ -122,4 +125,8 @@ export const Compose = ({
 
 const StyledMain = styled.div`
   height: ${composeHeight};
+`;
+
+const StyledTextCounter = styled.div<{error: boolean}>`
+  color: ${(x) => x.error ? 'red': 'black'};
 `;
