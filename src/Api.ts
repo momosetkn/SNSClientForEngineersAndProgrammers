@@ -37,6 +37,9 @@ export const uploadImages = async ({files, bindTextId}:{files: File[] | FileList
       fr.readAsDataURL(file);
     });
     const base64 = (await convertBase64Promise) as any as string;
+    if (base64.length > 100_000) {
+      console.error(`base64 size is ${base64.length}`);
+    }
     const params = {
       base64,
       bind_text_id: bindTextId,
