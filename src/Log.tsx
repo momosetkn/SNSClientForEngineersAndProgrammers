@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
-import { User, Text, end_point } from "./Api";
+import { User, Text, end_point, uploadImages } from "./Api";
 import { faImages, faReply, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
@@ -63,27 +63,7 @@ export const Log = ({
   const handleChangeImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
-    const fileUploader = async (file: File) => {
-      const convertBase64Promise = new Promise((r) => {
-        const fr = new FileReader();
-        fr.onload = (e) => {
-          r(e.target?.result);
-        };
-        fr.readAsDataURL(file);
-      });
-      const base64 = (await convertBase64Promise) as any as string;
-      const params = {
-        base64,
-        bind_text_id: text.id,
-      }
-      await fetch(`${end_point}/image`, {
-        method: "POST",
-        headers: {Authorization: "evolution"},
-        body: JSON.stringify(params),
-      }).then((res) => res.json()).then(x => console.log(x));
-    };
-
-    await Promise.all(Array.from(e.target.files).map(fileUploader));
+    await uploadImages({files: e.target.files, bindTextId: text.id});
 
     loadImages();
   };
@@ -143,7 +123,7 @@ export const Log = ({
               src={image.base64}
               alt={`${getUser(text._user_id)}さんが貼り付けた画像`}
               title={`${getUser(image._user_id)}さんが貼り付けた画像`}
-            />.
+            />
           </div>
         ))
         : null

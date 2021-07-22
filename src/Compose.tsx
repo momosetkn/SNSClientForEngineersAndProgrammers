@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { User } from "./Api";
 import { ComposeValue, initialComposeValue } from "./MainPage";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { faPaperPlane, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
+import { DragDropOverlay } from "./DragDropOverlay";
 
 export const composeHeight = '100px';
 
@@ -30,6 +31,10 @@ export const Compose = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleDropFile = (file: File) => {
+    onChange({...value, files: [...(value.files || []), file]});
+  };
 
   useEffect(() => {
     (async () => {
@@ -80,22 +85,37 @@ export const Compose = ({
             ))}
           </select>
         </div>
-        <textarea
-          name="text"
-          ref={inputRef}
-          placeholder="今なにしてる？"
-          rows={4}
-          cols={50}
-          value={value.text}
-          onChange={e => onChange({...value, text: e.target.value})}
-        />
-        <FontAwesomeIcon
-          className="clickable"
-          icon={faPaperPlane}
-          title="post"
-          onClick={(e) => {e.preventDefault();setSend(true);}}
-        />
+        <div className="flex">
+          <textarea
+            name="text"
+            ref={inputRef}
+            placeholder="今なにしてる？"
+            rows={4}
+            cols={50}
+            value={value.text}
+            onChange={e => onChange({...value, text: e.target.value})}
+          />
+          <FontAwesomeIcon
+            className="clickable"
+            icon={faPaperPlane}
+            title="post"
+            onClick={(e) => {e.preventDefault();setSend(true);}}
+          />
+          <div>
+            {value.files?.map((file, index) => (
+              <div>
+                {file.name}
+                <FontAwesomeIcon
+                  className="clickable ml1"
+                  icon={faTimesCircle}
+                  onClick={() => onChange({...value, files: value.files?.filter((_, i) => i !== index)})}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </form>
+      <DragDropOverlay onDropFile={handleDropFile}/>
     </StyledMain>
   );
 };
