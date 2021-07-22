@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { Compose } from "./Compose";
-import { end_point, User, Image, uploadImages, Response } from "./Api";
+import {end_point, User, Image, uploadImages, Response, Like} from "./Api";
 import './index.css';
 import styled from "styled-components";
 import {Logs} from "./Logs";
@@ -16,7 +16,8 @@ export const ComposeContext =
     {composeValue: initialComposeValue, setComposeValue: (_: ComposeValue) => {}}
   );
 
-export const ImageMapContext = createContext<Record<string, Image[]>>({});
+// TODO rename
+export const ImageMapContext = createContext<{imageMap: Record<string, Image[]>, likeMap: Record<string, Like>}>({imageMap: {}, likeMap: {}});
 
 export const LoadImagesContext = createContext<() => void>(() => {});
 
@@ -40,12 +41,13 @@ const lists = [
 export const MainPage = () => {
   const [userList, setUserList] = useState<User[]>([]);
   const [imageList, setImageList] = useState<Image[]>([]);
+  const [likeList, setLikeList] = useState<Like[]>([]);
   const [composeValue, setComposeValue] = useState<ComposeValue>(initialComposeValue);
   const [loadLogTrigger, setLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
   const [previewImages, setPreviewImages] = useState<{images: string[], index: number}>({images: [], index: 0});
   const [openPreviewImagesOverlay, setOpenPreviewImagesOverlay] = useState(false);
 
-  const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: { id: any; }) => ({
+  const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: User) => ({
     ...acc,
     [cur.id]: cur
   }), {}), [userList]);
@@ -54,6 +56,11 @@ export const MainPage = () => {
     ...acc,
     [cur.bind_text_id]: [...(acc[cur.bind_text_id] || []), cur],
   }), {}), [imageList]);
+
+  const likeMap: Record<string, Like> = useMemo(() => likeList.reduce((acc: any, cur: Like) => ({
+    ...acc,
+    [cur.id]: cur,
+  }), {}), [likeList]);
 
   const loadUser = () => {
     fetch(`${end_point}/user/all`)
@@ -65,6 +72,12 @@ export const MainPage = () => {
     fetch(`${end_point}/image/all`)
       .then((res) => (res.json()))
       .then(setImageList);
+  };
+
+  const loadLikes = () => {
+    fetch(`${end_point}/like/all`)
+      .then((res) => (res.json()))
+      .then(setLikeList);
   };
 
   const handleSubmit = async ({text, replyToUserId, replyToTextId, files}: ComposeValue) => {
@@ -92,6 +105,9 @@ export const MainPage = () => {
 
     loadImages();
     setInterval(loadImages, 10_000);
+
+    loadLikes();
+    setInterval(loadLikes, 60_000);//1minute
   }, []);
 
 
@@ -105,8 +121,8 @@ export const MainPage = () => {
     <StyledMain>
       <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
       <SetPreviewImagesContext.Provider value={setPreviewImages}>
-        <LoadImagesContext.Provider value={loadImages}>
-          <ImageMapContext.Provider value={imageMap}>
+        <LoadImagesContext.Provider value={loadImages} >
+          <ImageMapContext.Provider value={{imageMap, likeMap}}>
             <ComposeContext.Provider value={{composeValue, setComposeValue}}>
               <div className="flex">
                 {lists.map(list => (

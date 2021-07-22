@@ -23,6 +23,12 @@ export type User = Base & {
   name: string;
 }
 
+export type Like = {
+  id: string;
+  _updated_at: string;
+  like_count: number;
+}
+
 export type Response = {
   id: string;
 }

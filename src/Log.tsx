@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
-import { User, Text, end_point, uploadImages } from "./Api";
-import { faImages, faReply, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import {User, Text, end_point, uploadImages, Like} from "./Api";
+import {faHeart, faImages, faReply, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
 import styled from "styled-components";
@@ -28,7 +28,7 @@ export const Log = ({
   }>({open: false});
 
   const { composeValue, setComposeValue } = useContext(ComposeContext);
-  const imageMap = useContext(ImageMapContext);
+  const {imageMap, likeMap} = useContext(ImageMapContext);
   const loadImages = useContext(LoadImagesContext);
   const setPreviewImages = useContext(SetPreviewImagesContext);
 
@@ -64,6 +64,24 @@ export const Log = ({
 
   const handleReplyTo = (x: { textId: string, userId: string }) => {
     setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
+  };
+
+  const handleClickFavorite = async ({textId}: { textId: string }) => {
+    const like: Like | undefined = await fetch(`${end_point}/like/${textId}`)
+      .then((res) => res.json()).catch(err => {
+        if (err?.response?.status === 404) {
+          console.log("404");
+        }
+      });
+
+    const params = {
+      like_count: (like?.like_count || 0) + 1,
+    };
+    await fetch(`${end_point}/like/${textId}`, {
+      method: "PUT",
+      headers: {Authorization: "LOVE"},
+      body: JSON.stringify(params),
+    }).then((res) => res.json());
   };
 
   const handleChangeImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -143,6 +161,13 @@ export const Log = ({
           title="reply"
           onClick={() => handleReplyTo({textId: text.id, userId: text._user_id})}
         />
+        <FontAwesomeIcon
+          className="clickable ml2"
+          icon={faHeart}
+          title="favorite"
+          onClick={() => handleClickFavorite({textId: text.id})}
+        />
+        {likeMap[text.id]?.like_count || 0}
         <label htmlFor={`image_upload_${text.id}`}>
           <FontAwesomeIcon
             className="clickable ml2"
