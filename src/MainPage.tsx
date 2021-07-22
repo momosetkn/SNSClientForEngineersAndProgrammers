@@ -5,6 +5,7 @@ import { end_point, User, Image, uploadImages, Response } from "./Api";
 import './index.css';
 import styled from "styled-components";
 import {Logs} from "./Logs";
+import {PreviewImagesOverlay} from "./PreviewImagesOverlay";
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string; files?: File[]}
 
@@ -12,12 +13,14 @@ export const initialComposeValue: ComposeValue = {text: "", replyToTextId: "", r
 
 export const ComposeContext =
   createContext<{ composeValue: ComposeValue, setComposeValue: (value: ComposeValue) => void }>(
-    {composeValue: initialComposeValue, setComposeValue: (value: ComposeValue) => {}}
+    {composeValue: initialComposeValue, setComposeValue: (_: ComposeValue) => {}}
   );
 
 export const ImageMapContext = createContext<Record<string, Image[]>>({});
 
 export const LoadImagesContext = createContext<() => void>(() => {});
+
+export const SetPreviewImagesContext = createContext<(params: {images: string[], index: number}) => void>(() => {});
 
 const lists = [
   {
@@ -39,6 +42,8 @@ export const MainPage = () => {
   const [imageList, setImageList] = useState<Image[]>([]);
   const [composeValue, setComposeValue] = useState<ComposeValue>(initialComposeValue);
   const [loadLogTrigger, setLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
+  const [previewImages, setPreviewImages] = useState<{images: string[], index: number}>({images: [], index: 0});
+  const [openPreviewImagesOverlay, setOpenPreviewImagesOverlay] = useState(false);
 
   const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: { id: any; }) => ({
     ...acc,
@@ -89,26 +94,41 @@ export const MainPage = () => {
     setInterval(loadImages, 10_000);
   }, []);
 
+
+  useEffect(() => {
+    if(previewImages.images.length){
+      setOpenPreviewImagesOverlay(true);
+    }
+  }, [previewImages]);
+
   return (
     <StyledMain>
       <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
-      <LoadImagesContext.Provider value={loadImages}>
-        <ImageMapContext.Provider value={imageMap}>
-          <ComposeContext.Provider value={{composeValue, setComposeValue}}>
-            <div className="flex">
-              {lists.map(list => (
-                <Logs
-                  key={list.name}
-                  name={list.name}
-                  query={list.query}
-                  userMap={userMap}
-                  loadLogTrigger={loadLogTrigger}
-                />
-              ))}
-            </div>
-          </ComposeContext.Provider>
-        </ImageMapContext.Provider>
-      </LoadImagesContext.Provider>
+      <SetPreviewImagesContext.Provider value={setPreviewImages}>
+        <LoadImagesContext.Provider value={loadImages}>
+          <ImageMapContext.Provider value={imageMap}>
+            <ComposeContext.Provider value={{composeValue, setComposeValue}}>
+              <div className="flex">
+                {lists.map(list => (
+                  <Logs
+                    key={list.name}
+                    name={list.name}
+                    query={list.query}
+                    userMap={userMap}
+                    loadLogTrigger={loadLogTrigger}
+                  />
+                ))}
+              </div>
+            </ComposeContext.Provider>
+          </ImageMapContext.Provider>
+        </LoadImagesContext.Provider>
+      </SetPreviewImagesContext.Provider>
+      <PreviewImagesOverlay
+        open={openPreviewImagesOverlay}
+        onClose={() => setOpenPreviewImagesOverlay(false)}
+        images={previewImages.images}
+        index={previewImages.index}
+      />
     </StyledMain>
   );
 };

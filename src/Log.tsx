@@ -5,7 +5,12 @@ import { faImages, faReply, faTimesCircle } from "@fortawesome/free-solid-svg-ic
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
 import styled from "styled-components";
-import { ComposeContext, ImageMapContext, LoadImagesContext } from "./MainPage";
+import {
+  ComposeContext,
+  ImageMapContext,
+  LoadImagesContext,
+  SetPreviewImagesContext
+} from "./MainPage";
 
 export const Log = ({
   text,
@@ -25,6 +30,7 @@ export const Log = ({
   const { composeValue, setComposeValue } = useContext(ComposeContext);
   const imageMap = useContext(ImageMapContext);
   const loadImages = useContext(LoadImagesContext);
+  const setPreviewImages = useContext(SetPreviewImagesContext);
 
   const time = useMemo(() => {
     const now = new Date();
@@ -117,12 +123,14 @@ export const Log = ({
         </StyledText>
       </div>
       {imageMap[text.id]?.length ?
-        imageMap[text.id].map(image => (
+        imageMap[text.id].map((image, index) => (
           <div>
             <StyledImg
+              className="clickable"
               src={image.base64}
               alt={`${getUser(text._user_id)}さんが貼り付けた画像`}
               title={`${getUser(image._user_id)}さんが貼り付けた画像`}
+              onClick={() => setPreviewImages({images: imageMap[text.id].map(x => x.base64), index})}
             />
           </div>
         ))
