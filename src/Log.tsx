@@ -142,7 +142,7 @@ export const Log = ({
       </div>
       {imageMap[text.id]?.length ?
         imageMap[text.id].map((image, index) => (
-          <div>
+          <div key={image.id}>
             <StyledImg
               className="clickable"
               src={image.base64}
