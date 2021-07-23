@@ -23,20 +23,10 @@ export const LoadImagesContext = createContext<() => void>(() => {});
 
 export const SetPreviewImagesContext = createContext<(params: {images: string[], index: number}) => void>(() => {});
 
-const lists = [
-  {
-    name: 'All',
-    query: encodeURI("$filter=_user_id ne 'd9ecf9245defb6b07cb86fe92a6fde9e735fc9f9'&$orderby=_created_at desc"),
-  },
-  {
-    name: 'To me',
-    query: encodeURI("$filter=in_reply_to_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc")
-  },
-  {
-    name: 'Self',
-    query: encodeURI("$filter=_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc")
-  },
-]
+export type PainValue = {
+  name: string;
+  query: string;
+};
 
 export const MainPage = () => {
   const [userList, setUserList] = useState<User[]>([]);
@@ -46,6 +36,21 @@ export const MainPage = () => {
   const [loadLogTrigger, setLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
   const [previewImages, setPreviewImages] = useState<{images: string[], index: number}>({images: [], index: 0});
   const [openPreviewImagesOverlay, setOpenPreviewImagesOverlay] = useState(false);
+  // TODO: localstorage?
+  const [painValues, setPainValues] = useState<PainValue[]>( [
+    {
+      name: 'All',
+      query: encodeURI("$filter=_user_id ne 'd9ecf9245defb6b07cb86fe92a6fde9e735fc9f9'&$orderby=_created_at desc"),
+    },
+    {
+      name: 'To me',
+      query: encodeURI("$filter=in_reply_to_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc")
+    },
+    {
+      name: 'Self',
+      query: encodeURI("$filter=_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc")
+    },
+  ]);
 
   const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: User) => ({
     ...acc,
@@ -139,13 +144,19 @@ export const MainPage = () => {
           <ImageMapContext.Provider value={{imageMap, likeMap}}>
             <ComposeContext.Provider value={{composeValue, setComposeValue}}>
               <div className="flex">
-                {lists.map(list => (
+                {painValues.map((list, index) => (
                   <Logs
                     key={list.name}
-                    name={list.name}
-                    query={list.query}
+                    value={list}
                     userMap={userMap}
                     loadLogTrigger={loadLogTrigger}
+                    onChangePainValue={value => {
+                      setPainValues(prev => {
+                        const newList = [...prev];
+                        newList[index] = value;
+                        return newList
+                      })
+                    }}
                   />
                 ))}
               </div>
