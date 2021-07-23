@@ -127,6 +127,6 @@ const StyledTitleHeader = styled.div`
 `;
 
 const StyledTexts = styled.div<{titleHeight: number}>`
-  height: calc(100vh - ${(x) => composeHeight + x.titleHeight}}px);
+  height: calc(100vh - ${(x) => composeHeight + x.titleHeight}px);
   overflow-y: auto;
 `;
