@@ -68,10 +68,23 @@ export const MainPage = () => {
       .then(setUserList);
   };
 
-  const loadImages = () => {
-    fetch(`${end_point}/image/all`)
-      .then((res) => (res.json()))
-      .then(setImageList);
+  const loadImages = async () => {
+    const loadImagesLimit = async (limit: number) => {
+      const newImageList: Image[] = await fetch(`${end_point}/image/all?$orderby=_created_at desc&$limit=${limit}`).then((res) => (res.json()));
+
+      if(imageList.length ===0){
+        setImageList(newImageList);
+        return;
+      }
+
+      const newImageListIndex = newImageList.findIndex(newImage => newImage.id === imageList[0]?.id);
+      if(newImageListIndex !== -1){
+        setImageList(prev => [...newImageList.slice(0, newImageListIndex), ...prev]);
+        return;
+      }
+      await loadImagesLimit(limit + 100);
+    }
+    await loadImagesLimit(20);
   };
 
   const loadLikes = () => {
@@ -108,6 +121,7 @@ export const MainPage = () => {
 
     loadLikes();
     setInterval(loadLikes, 60_000);//1minute
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
