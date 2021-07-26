@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import { User } from "./Api";
-import { ComposeValue, initialComposeValue } from "./MainPage";
+import {ComposeValue, ImageMapContext, initialComposeValue} from "./MainPage";
 import { faPaperPlane, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
@@ -20,6 +20,8 @@ export const Compose = ({
   userList: User[]
 }) => {
   const [send, setSend] = useState(false);
+
+  const { setNotificationContent } =  useContext(ImageMapContext);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -44,11 +46,13 @@ export const Compose = ({
           await onSubmit(value);
           onChange(initialComposeValue);
         } catch (e) {
+          setNotificationContent({text: 'エラー発生'});
           console.error(e);
         }
       }
     })();
-  }, [send, value, onChange, onSubmit]);
+  }, [send, value, onChange, onSubmit, setNotificationContent]);
+
   useEffect(() => {
     if (inputRef.current) {
       console.log('effect');

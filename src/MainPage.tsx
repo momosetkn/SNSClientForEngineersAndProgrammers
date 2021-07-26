@@ -6,6 +6,7 @@ import './index.css';
 import styled from "styled-components";
 import {Logs} from "./Logs";
 import {PreviewImagesOverlay} from "./PreviewImagesOverlay";
+import {NotificationBar, NotificationContent} from "./NotificationBar";
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string; files?: File[]}
 
@@ -17,7 +18,15 @@ export const ComposeContext =
   );
 
 // TODO rename
-export const ImageMapContext = createContext<{imageMap: Record<string, Image[]>, likeMap: Record<string, Like>}>({imageMap: {}, likeMap: {}});
+export const ImageMapContext = createContext<{
+  imageMap: Record<string, Image[]>,
+  likeMap: Record<string, Like>,
+  setNotificationContent: (value: NotificationContent) => void,
+}>({
+  imageMap: {},
+  likeMap: {},
+  setNotificationContent: (_: NotificationContent) => {},
+});
 
 export const LoadImagesContext = createContext<() => void>(() => {});
 
@@ -36,6 +45,7 @@ export const MainPage = () => {
   const [loadLogTrigger, setLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
   const [previewImages, setPreviewImages] = useState<{images: string[], index: number}>({images: [], index: 0});
   const [openPreviewImagesOverlay, setOpenPreviewImagesOverlay] = useState(false);
+  const [notificationContent, setNotificationContent] = useState<NotificationContent>();
   // TODO: localstorage?
   const [painValues, setPainValues] = useState<PainValue[]>( [
     {
@@ -141,7 +151,7 @@ export const MainPage = () => {
       <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
       <SetPreviewImagesContext.Provider value={setPreviewImages}>
         <LoadImagesContext.Provider value={loadImages} >
-          <ImageMapContext.Provider value={{imageMap, likeMap}}>
+          <ImageMapContext.Provider value={{imageMap, likeMap, setNotificationContent }}>
             <ComposeContext.Provider value={{composeValue, setComposeValue}}>
               <div className="flex">
                 {painValues.map((list, index) => (
@@ -170,6 +180,7 @@ export const MainPage = () => {
         images={previewImages.images}
         index={previewImages.index}
       />
+      <NotificationBar content={notificationContent} />
     </StyledMain>
   );
 };
