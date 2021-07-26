@@ -50,7 +50,7 @@ const StyledMain2 = styled.div`
 `;
 
 const StyledMain = styled.div<{type?: NotificationType}>`
-  z-index: ${zIndexes.notification};
+  z-index: ${zIndexes.notificationBar};
   background: black;
   color: white;
   border-radius: 10px;

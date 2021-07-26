@@ -2,5 +2,5 @@ export const zIndexes = {
   dragDrop: 100,
   previewImages: 300,
   previewImagesBackground: 200,
-  notification: 500,
+  notificationBar: 500,
 };
