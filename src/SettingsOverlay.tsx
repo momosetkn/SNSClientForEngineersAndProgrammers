@@ -23,7 +23,7 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
     return await fetch(`${end_point}/user/create_user`, {
       method: "POST",
       headers: {Authorization: "HelloWorld"},
-      body: JSON.stringify(value).replaceAll("'", String.raw`\'`)
+      body: JSON.stringify(value)
     }).then(httpToJson);
   };
 
