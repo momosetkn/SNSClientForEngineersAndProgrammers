@@ -1,4 +1,4 @@
-import {end_point, httpToJson, Text, User} from "./Api";
+import {end_point, httpToJson, Text} from "./Api";
 import React, {useEffect, useState} from "react";
 import {Log} from "./Log";
 import styled from "styled-components";
@@ -9,12 +9,10 @@ const titleHeaderHeight = 22;
 
 export const Logs = ({
   value,
-  userMap,
   onChangePainValue,
   loadLogTrigger,
 } : {
   value: PainValue,
-  userMap: Record<string, User>,
   onChangePainValue: (value: PainValue) => void,
   loadLogTrigger?: number,
 }) => {
@@ -104,7 +102,6 @@ export const Logs = ({
           <Log
             key={text.id}
             text={text}
-            userMap={userMap}
           />
         ))}
         <div className="clickable" onClick={handleClickLoadMore}>load more</div>

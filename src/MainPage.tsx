@@ -21,10 +21,12 @@ export const ComposeContext =
 export const ImageMapContext = createContext<{
   imageMap: Record<string, Image[]>,
   likeMap: Record<string, Like>,
+  userMap: Record<string, User>,
   setNotificationContent: (value: NotificationContent) => void,
 }>({
   imageMap: {},
   likeMap: {},
+  userMap: {},
   setNotificationContent: (_: NotificationContent) => {},
 });
 
@@ -64,7 +66,7 @@ export const MainPage = () => {
 
   const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: User) => ({
     ...acc,
-    [cur.id]: cur
+    [cur._user_id]: acc[cur._user_id] || cur,
   }), {}), [userList]);
 
   const imageMap: Record<string, Image[]> = useMemo(() => imageList.reduce((acc: any, cur: Image) => ({
@@ -78,7 +80,7 @@ export const MainPage = () => {
   }), {}), [likeList]);
 
   const loadUser = () => {
-    fetch(`${end_point}/user/all`)
+    fetch(`${end_point}/user/all?$orderby=_created_at desc`)
       .then(httpToJson)
       .then(setUserList);
   };
@@ -148,17 +150,16 @@ export const MainPage = () => {
 
   return (
     <StyledMain>
-      <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
       <SetPreviewImagesContext.Provider value={setPreviewImages}>
         <LoadImagesContext.Provider value={loadImages} >
-          <ImageMapContext.Provider value={{imageMap, likeMap, setNotificationContent }}>
+          <ImageMapContext.Provider value={{imageMap, likeMap, userMap, setNotificationContent }}>
             <ComposeContext.Provider value={{composeValue, setComposeValue}}>
+              <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
               <div className="flex">
                 {painValues.map((list, index) => (
                   <Logs
                     key={list.name}
                     value={list}
-                    userMap={userMap}
                     loadLogTrigger={loadLogTrigger}
                     onChangePainValue={value => {
                       setPainValues(prev => {

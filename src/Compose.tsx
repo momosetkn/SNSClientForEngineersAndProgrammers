@@ -1,10 +1,11 @@
 import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import { User } from "./Api";
 import {ComposeValue, ImageMapContext, initialComposeValue} from "./MainPage";
-import { faPaperPlane, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
+import {faCog, faPaperPlane, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import { DragDropOverlay } from "./DragDropOverlay";
+import {SettingsOverlay} from "./SettingsOverlay";
 
 export const composeHeight = 100;
 
@@ -20,6 +21,7 @@ export const Compose = ({
   userList: User[]
 }) => {
   const [send, setSend] = useState(false);
+  const [settingsOverlayOpen, setSettingsOverlayOpen] = useState(false);
 
   const { setNotificationContent } =  useContext(ImageMapContext);
 
@@ -55,7 +57,6 @@ export const Compose = ({
 
   useEffect(() => {
     if (inputRef.current) {
-      console.log('effect');
       inputRef.current.removeEventListener("keyup", handleKeyup, false);
       inputRef.current.addEventListener("keyup", handleKeyup, false);
     }
@@ -71,7 +72,7 @@ export const Compose = ({
 
   return (
     <StyledMain>
-      <form>
+      <StyledForm>
         <div className="flex">
           <input
             type="text"
@@ -125,7 +126,9 @@ export const Compose = ({
             ))}
           </div>
         </div>
-      </form>
+      </StyledForm>
+      <FontAwesomeIcon className="clickable ml1" icon={faCog} onClick={() => setSettingsOverlayOpen(true)}/>
+      <SettingsOverlay open={settingsOverlayOpen} onClose={() => setSettingsOverlayOpen(false)}/>
       <DragDropOverlay onDropFile={handleDropFile}/>
     </StyledMain>
   );
@@ -133,6 +136,11 @@ export const Compose = ({
 
 const StyledMain = styled.div`
   height: ${composeHeight}px;
+  display: flex;
+`;
+
+const StyledForm = styled.div`
+  width: 500px;
 `;
 
 const StyledTextCounter = styled.div<{error: boolean}>`

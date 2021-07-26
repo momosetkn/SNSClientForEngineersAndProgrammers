@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
-import {User, Text, end_point, uploadImages, Like} from "./Api";
+import {Text, end_point, uploadImages, Like} from "./Api";
 import {faHeart, faImages, faReply, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
@@ -14,11 +14,9 @@ import {
 
 export const Log = ({
   text,
-  userMap,
   onClose,
 }: {
   text: Text;
-  userMap: Record<string, User>,
   onClose?: () => void
 }) => {
   const [updateTimeTrigger, setUpdateTimeTrigger] = useState(Number.MIN_SAFE_INTEGER);
@@ -29,7 +27,7 @@ export const Log = ({
   const [likeCount, setLikeCount] = useState(0);
 
   const { composeValue, setComposeValue } = useContext(ComposeContext);
-  const {imageMap, likeMap} = useContext(ImageMapContext);
+  const {imageMap, likeMap, userMap} = useContext(ImageMapContext);
   const loadImages = useContext(LoadImagesContext);
   const setPreviewImages = useContext(SetPreviewImagesContext);
 
@@ -204,7 +202,6 @@ export const Log = ({
             >
               <Log
                 text={replyDestination.text}
-                userMap={userMap}
                 onClose={() => setReplyDestination(prev => ({...prev, open: false}))}
               />
             </StyledReplyDestinationText>
