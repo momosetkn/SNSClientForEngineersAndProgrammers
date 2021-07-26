@@ -26,6 +26,7 @@ export const Log = ({
     text?: Text;
     open: boolean;
   }>({open: false});
+  const [likeCount, setLikeCount] = useState(0);
 
   const { composeValue, setComposeValue } = useContext(ComposeContext);
   const {imageMap, likeMap} = useContext(ImageMapContext);
@@ -58,6 +59,10 @@ export const Log = ({
     setInterval(() => setUpdateTimeTrigger(prev => prev + 1), 5_000);
   }, []);
 
+  useEffect(() => {
+    setLikeCount(likeMap[text.id]?.like_count || 0);
+  }, [likeMap, text.id]);
+
   const getUser = (userId: string) => {
     return userMap[userId]?.name || `匿名(${userId.slice(0, 2)})`;
   };
@@ -74,14 +79,18 @@ export const Log = ({
         }
       });
 
+    const nextLikeCount = (like?.like_count || 0) + 1;
     const params = {
-      like_count: (like?.like_count || 0) + 1,
+      like_count: nextLikeCount
     };
     await fetch(`${end_point}/like/${textId}`, {
       method: "PUT",
       headers: {Authorization: "LOVE"},
       body: JSON.stringify(params),
-    }).then((res) => res.json());
+    }).then((res) => res.json())
+      .then((_) => {
+        setLikeCount(nextLikeCount);
+      });
   };
 
   const handleChangeImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -167,7 +176,7 @@ export const Log = ({
           title="favorite"
           onClick={() => handleClickFavorite({textId: text.id})}
         />
-        {likeMap[text.id]?.like_count || 0}
+        {likeCount}
         <label htmlFor={`image_upload_${text.id}`}>
           <FontAwesomeIcon
             className="clickable ml2"
