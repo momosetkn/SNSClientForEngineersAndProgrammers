@@ -1,4 +1,4 @@
-import {end_point, Text, User} from "./Api";
+import {end_point, httpToJson, Text, User} from "./Api";
 import React, {useEffect, useState} from "react";
 import {Log} from "./Log";
 import styled from "styled-components";
@@ -29,7 +29,7 @@ export const Logs = ({
 
   const loadLog = () => {
     fetch(`${end_point}/text/all?${value.query}&$limit=${limit}`)
-      .then((res) => (res.json()))
+      .then(httpToJson)
       .then(setTexts).catch(console.error);
   };
 

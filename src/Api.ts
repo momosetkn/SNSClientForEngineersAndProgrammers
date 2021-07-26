@@ -29,7 +29,7 @@ export type Like = {
   like_count: number;
 }
 
-export type Response = {
+export type Return = {
   id: string;
 }
 
@@ -59,3 +59,5 @@ export const uploadImages = async ({files, bindTextId}:{files: File[] | FileList
 
   await Promise.all(Array.from(files).map(fileUploader));
 };
+
+export const httpToJson = (res: Response) => res.ok ? res.json() : res.text();

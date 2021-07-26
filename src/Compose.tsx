@@ -40,8 +40,12 @@ export const Compose = ({
     (async () => {
       if (send && value.text.trim()) {
         setSend(false);
-        onSubmit(value);
-        onChange(initialComposeValue);
+        try {
+          await onSubmit(value);
+          onChange(initialComposeValue);
+        } catch (e) {
+          console.error(e);
+        }
       }
     })();
   }, [send, value, onChange, onSubmit]);

@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
 import { Compose } from "./Compose";
-import {end_point, User, Image, uploadImages, Response, Like} from "./Api";
+import {end_point, User, Image, uploadImages, Return, Like, httpToJson} from "./Api";
 import './index.css';
 import styled from "styled-components";
 import {Logs} from "./Logs";
@@ -69,13 +69,13 @@ export const MainPage = () => {
 
   const loadUser = () => {
     fetch(`${end_point}/user/all`)
-      .then((res) => (res.json()))
+      .then(httpToJson)
       .then(setUserList);
   };
 
   const loadImages = async () => {
     const loadImagesLimit = async (limit: number) => {
-      const newImageList: Image[] = await fetch(`${end_point}/image/all?$orderby=_created_at desc&$limit=${limit}`).then((res) => (res.json()));
+      const newImageList: Image[] = await fetch(`${end_point}/image/all?$orderby=_created_at desc&$limit=${limit}`).then(httpToJson);
 
       if(imageList.length ===0){
         setImageList(newImageList);
@@ -94,7 +94,7 @@ export const MainPage = () => {
 
   const loadLikes = () => {
     fetch(`${end_point}/like/all`)
-      .then((res) => (res.json()))
+      .then(httpToJson)
       .then(setLikeList);
   };
 
@@ -106,14 +106,14 @@ export const MainPage = () => {
     };
     // 以下コードにて、'を"へ置換してるっぽいので、エスケープさせる（\"と認識させて、文字列の終端と認識されちゃうのを防止）
     // https://github.com/HawkClaws/versatileapi/blob/6f7c8db356455f890662b525106d2e1270fa58e8/versatileapi/src/main/java/com/flex/versatileapi/service/VersatileService.java#L154
-    const postTextRes: Response = await fetch(`${end_point}/text`, {
+    const postTextRes: Return = await fetch(`${end_point}/text`, {
       method: "POST",
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(params).replaceAll("'", String.raw`\'`)
-    }).then((res) => res.json());
+    }).then(httpToJson);
     files && await uploadImages({files, bindTextId: postTextRes.id});
 
-    loadImages();
+    await loadImages();
     setLoadLogTrigger(prev => prev+1);
   };
 

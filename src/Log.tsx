@@ -75,7 +75,9 @@ export const Log = ({
     const like: Like | undefined = await fetch(`${end_point}/like/${textId}`)
       .then((res) => res.json()).catch(err => {
         if (err?.response?.status === 404) {
-          console.log("404");
+          // 0件なので無視
+        } else {
+          throw err;
         }
       });
 
