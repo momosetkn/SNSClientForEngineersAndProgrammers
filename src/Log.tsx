@@ -11,6 +11,7 @@ import {
   LoadImagesContext,
   SetPreviewImagesContext
 } from "./MainPage";
+import {asyncConvertBase64} from "./Util";
 
 export const Log = ({
   text,
@@ -27,7 +28,7 @@ export const Log = ({
   const [likeCount, setLikeCount] = useState(0);
 
   const { composeValue, setComposeValue } = useContext(ComposeContext);
-  const {imageMap, likeMap, userMap} = useContext(ImageMapContext);
+  const {imageMap, likeMap, userMap, setNotificationContent} = useContext(ImageMapContext);
   const loadImages = useContext(LoadImagesContext);
   const setPreviewImages = useContext(SetPreviewImagesContext);
 
@@ -96,7 +97,15 @@ export const Log = ({
   const handleChangeImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
 
-    await uploadImages({files: e.target.files, bindTextId: text.id});
+    for(const file of Array.from(e.target.files)){
+      const base64 = await asyncConvertBase64(file);
+      if(!base64) {
+        console.error('画像が大きすぎます');
+        setNotificationContent({text: '画像が大きすぎます', type: "error"})
+        continue;
+      }
+      await uploadImages({base64s: [base64], bindTextId: text.id});
+    }
 
     loadImages();
   };

@@ -33,19 +33,12 @@ export type Return = {
   id: string;
 }
 
-export const uploadImages = async ({files, bindTextId}:{files: File[] | FileList, bindTextId: string}) => {
-  const fileUploader = async (file: File) => {
-    const convertBase64Promise = new Promise((r) => {
-      const fr = new FileReader();
-      fr.onload = (e) => {
-        r(e.target?.result);
-      };
-      fr.readAsDataURL(file);
-    });
-    const base64 = (await convertBase64Promise) as any as string;
-    if (base64.length > 100_000) {
-      console.error(`base64 size is ${base64.length}`);
-    }
+export const imageMaxSize = 100_000;
+
+export const uploadImages = async ({base64s, bindTextId}:{base64s: string[], bindTextId: string}) => {
+  const fileUploader = async (base64: string) => {
+
+    if (base64.length > imageMaxSize) throw new Error();
     const params = {
       base64,
       bind_text_id: bindTextId,
@@ -57,7 +50,7 @@ export const uploadImages = async ({files, bindTextId}:{files: File[] | FileList
     }).then((res) => res.json()).then(x => console.log(x));
   };
 
-  await Promise.all(Array.from(files).map(fileUploader));
+  await Promise.all(Array.from(base64s).map(fileUploader));
 };
 
 export const httpToJson = (res: Response) => res.ok ? res.json() : res.text();

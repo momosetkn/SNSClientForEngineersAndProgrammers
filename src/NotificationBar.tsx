@@ -51,10 +51,10 @@ const StyledMain2 = styled.div`
 
 const StyledMain = styled.div<{type?: NotificationType}>`
   z-index: ${zIndexes.notificationBar};
-  background: black;
+  background: ${x => notificationTypeMapping(x.type)};
   color: white;
   border-radius: 10px;
   margin-top: 16px;
   padding: 8px 16px;
-  color: ${x => notificationTypeMapping(x.type)};
+  color: white;
 `;

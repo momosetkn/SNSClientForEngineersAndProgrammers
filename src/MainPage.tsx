@@ -7,6 +7,7 @@ import styled from "styled-components";
 import {Logs} from "./Logs";
 import {PreviewImagesOverlay} from "./PreviewImagesOverlay";
 import {NotificationBar, NotificationContent} from "./NotificationBar";
+import {asyncConvertBase64} from "./Util";
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string; files?: File[]}
 
@@ -121,9 +122,19 @@ export const MainPage = () => {
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(params)
     }).then(httpToJson);
-    files && await uploadImages({files, bindTextId: postTextRes.id});
+    if (files) {
+      for (const file of files) {
+        const base64 = await asyncConvertBase64(file);
+        if (!base64) {
+          console.error('画像が大きすぎます');
+          setNotificationContent({text: '画像が大きすぎます', type: "error"});
+          continue;
+        }
+        await uploadImages({base64s: [base64], bindTextId: postTextRes.id});
+      }
+      await loadImages();
+    }
 
-    await loadImages();
     setLoadLogTrigger(prev => prev+1);
   };
 

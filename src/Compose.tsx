@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import { DragDropOverlay } from "./DragDropOverlay";
 import {SettingsOverlay} from "./SettingsOverlay";
+import {asyncConvertBase64} from "./Util";
 
 export const composeHeight = 100;
 
@@ -36,7 +37,13 @@ export const Compose = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDropFile = (file: File) => {
+  const handleDropFile = async (file: File) => {
+    const base64 = await asyncConvertBase64(file);
+    if (!base64) {
+      console.error('画像が大きすぎます');
+      setNotificationContent({text: '画像が大きすぎます', type: "error"});
+      return;
+    }
     onChange({...value, files: [...(value.files || []), file]});
   };
 
