@@ -28,19 +28,27 @@ export const Logs = ({
     onChangePain({...value, limit: value.limit + 20});
   };
 
-  const changePainFlg = editingPainValue.name !== value.name || editingPainValue.query !== value.query;
-
   const loadLog = () => setInternalLoadLogTrigger(p => p + 1);
 
   const handleClickTitleHeader = () => {
     setOpenTitle(prev => !prev);
-    if(changePainFlg) onChangePain(editingPainValue);
+    if (editingPainValue.name !== value.name
+      || editingPainValue.query !== value.query
+      || editingPainValue.limit !== value.limit
+      || editingPainValue.pollingIntervalTime !== value.pollingIntervalTime) onChangePain(editingPainValue);
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setEditingPainValue((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
+    }))
+  };
+
+  const handleChangeInt = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setEditingPainValue((prev) => ({
+      ...prev,
+      [event.target.name]: parseInt(event.target.value),
     }))
   };
 
@@ -77,10 +85,10 @@ export const Logs = ({
         </StyledTitleHeader>
         <StyledForm className="p2">
           <div>
-            <label htmlFor="Logs_name">name</label>
+            <label htmlFor={`${value.name}_Logs_name`}>name</label>
             <input
               name="name"
-              id="Logs_name"
+              id={`${value.name}_Logs_name`}
               type="text"
               value={editingPainValue.name}
               onChange={handleChange}
@@ -88,10 +96,10 @@ export const Logs = ({
             />
           </div>
           <div>
-            <label htmlFor="Logs_query">query</label>
+            <label htmlFor={`${value.name}_Logs_query`}>query</label>
             <textarea
               name="query"
-              id="Logs_query"
+              id={`${value.name}_Logs_query`}
               cols={30}
               rows={5}
               value={editingPainValue.query}
@@ -100,28 +108,24 @@ export const Logs = ({
             />
           </div>
           <div>
-            <label htmlFor="Logs_limit">limit</label>
+            <label htmlFor={`${value.name}_Logs_limit`}>limit</label>
             <input
               name="limit"
-              id="Logs_limit"
+              id={`${value.name}_Logs_limit`}
               type="number"
-              value={value.limit}
-              onChange={e => {
-                setEditingPainValue(prev => ({...prev, limit: parseInt(e.target.value)}));
-              }}
+              value={editingPainValue.limit}
+              onChange={handleChangeInt}
               onBlur={loadLog}
             />
           </div>
           <div>
-            <label htmlFor="Logs_pollingIntervalTime">polling interval time</label>
+            <label htmlFor={`${value.name}_Logs_pollingIntervalTime`}>polling interval time</label>
             <input
               name="pollingIntervalTime"
-              id="Logs_pollingIntervalTime"
+              id={`${value.name}_Logs_pollingIntervalTime`}
               type="number"
-              value={value.pollingIntervalTime}
-              onChange={e => {
-                setEditingPainValue(prev => ({...prev, pollingIntervalTime: parseInt(e.target.value)}));
-              }}
+              value={editingPainValue.pollingIntervalTime}
+              onChange={handleChangeInt}
               onBlur={loadLog}
             />
           </div>

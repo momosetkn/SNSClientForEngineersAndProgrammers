@@ -123,6 +123,11 @@ export const MainPage = () => {
   };
 
   const handleChangePain = (value: PainValue, index: number) => {
+    const sameNamePain = pains.find((pain, i) => pain.name === value.name && i !== index);
+    if(sameNamePain) {
+      setNotificationContent({text: "同一のpain名は設定できません", type: 'error'});
+      return;
+    }
     setPains(prev => {
       const newList = [...prev];
       newList[index] = value;
