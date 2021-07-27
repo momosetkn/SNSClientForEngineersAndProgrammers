@@ -8,6 +8,7 @@ import {Logs} from "./Logs";
 import {PreviewImagesOverlay} from "./PreviewImagesOverlay";
 import {NotificationBar, NotificationContent} from "./NotificationBar";
 import {asyncConvertBase64} from "./Util";
+import {localStorageKey} from "./Constants";
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string; files?: File[]}
 
@@ -38,7 +39,30 @@ export const SetPreviewImagesContext = createContext<(params: {images: string[],
 export type PainValue = {
   name: string;
   query: string;
+  limit: number;
+  pollingIntervalTime: number;
 };
+
+const initialPains = [
+  {
+    name: 'All',
+    query: "$filter=_user_id ne 'd9ecf9245defb6b07cb86fe92a6fde9e735fc9f9'&$orderby=_created_at desc",
+    limit: 20,
+    pollingIntervalTime: 20,
+  },
+  {
+    name: 'To me',
+    query: "$filter=in_reply_to_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc",
+    limit: 20,
+    pollingIntervalTime: 20,
+  },
+  {
+    name: 'Self',
+    query: "$filter=_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc",
+    limit: 20,
+    pollingIntervalTime: 20,
+  },
+];
 
 export const MainPage = () => {
   const [userList, setUserList] = useState<User[]>([]);
@@ -50,20 +74,7 @@ export const MainPage = () => {
   const [openPreviewImagesOverlay, setOpenPreviewImagesOverlay] = useState(false);
   const [notificationContent, setNotificationContent] = useState<NotificationContent>();
   // TODO: localstorage?
-  const [painValues, setPainValues] = useState<PainValue[]>( [
-    {
-      name: 'All',
-      query: encodeURI("$filter=_user_id ne 'd9ecf9245defb6b07cb86fe92a6fde9e735fc9f9'&$orderby=_created_at desc"),
-    },
-    {
-      name: 'To me',
-      query: encodeURI("$filter=in_reply_to_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc")
-    },
-    {
-      name: 'Self',
-      query: encodeURI("$filter=_user_id eq '57039384a74e1fed39b1663b460b7e7f51f99bee'&$orderby=_created_at desc")
-    },
-  ]);
+  const [pains, setPains] = useState<PainValue[]>([]);
 
   const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: User) => ({
     ...acc,
@@ -111,6 +122,14 @@ export const MainPage = () => {
       .then(setLikeList);
   };
 
+  const handleChangePain = (value: PainValue, index: number) => {
+    setPains(prev => {
+      const newList = [...prev];
+      newList[index] = value;
+      return newList
+    })
+  };
+
   const handleSubmit = async ({text, replyToUserId, replyToTextId, files}: ComposeValue) => {
     const params = {
       text,
@@ -147,15 +166,21 @@ export const MainPage = () => {
 
     loadLikes();
     setInterval(loadLikes, 60_000);//1minute
+
+    const value = localStorage.getItem(localStorageKey.pains)
+    setPains(value ? JSON.parse(value) : initialPains);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
   useEffect(() => {
     if(previewImages.images.length){
       setOpenPreviewImagesOverlay(true);
     }
   }, [previewImages]);
+
+  useEffect(() => {
+    localStorage.setItem(localStorageKey.pains, JSON.stringify(pains))
+  }, [pains]);
 
   return (
     <StyledMain>
@@ -165,18 +190,12 @@ export const MainPage = () => {
             <ComposeContext.Provider value={{composeValue, setComposeValue}}>
               <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
               <div className="flex">
-                {painValues.map((list, index) => (
+                {pains.map((list, index) => (
                   <Logs
                     key={list.name}
                     value={list}
                     loadLogTrigger={loadLogTrigger}
-                    onChangePainValue={value => {
-                      setPainValues(prev => {
-                        const newList = [...prev];
-                        newList[index] = value;
-                        return newList
-                      })
-                    }}
+                    onChangePain={value => handleChangePain(value, index)}
                   />
                 ))}
               </div>

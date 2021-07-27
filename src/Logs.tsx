@@ -1,5 +1,5 @@
 import {end_point, httpToJson, Text} from "./Api";
-import React, {useEffect, useState} from "react";
+import React, {ChangeEvent, useEffect, useState} from "react";
 import {Log} from "./Log";
 import styled from "styled-components";
 import {composeHeight} from "./Compose";
@@ -9,16 +9,14 @@ const titleHeaderHeight = 22;
 
 export const Logs = ({
   value,
-  onChangePainValue,
+  onChangePain,
   loadLogTrigger,
 } : {
   value: PainValue,
-  onChangePainValue: (value: PainValue) => void,
+  onChangePain: (value: PainValue) => void,
   loadLogTrigger?: number,
 }) => {
   const [texts, setTexts] = useState<Text[]>([]);
-  const [limit, setLimit] = useState(20);
-  const [pollingIntervalTime, setPollingIntervalTime] = useState(20);
   const [editingPainValue, setEditingPainValue] = useState(value);
   // Logs個別のトリガー
   const [internalLoadLogTrigger, setInternalLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
@@ -26,26 +24,41 @@ export const Logs = ({
 
   const titleHeight = (openTitle ? 300 : 0 ) + titleHeaderHeight;
 
-  const loadLog = () => {
-    fetch(`${end_point}/text/all?${value.query}&$limit=${limit}`)
-      .then(httpToJson)
-      .then(setTexts).catch(console.error);
+  const handleClickLoadMore = () => {
+    onChangePain({...value, limit: value.limit + 20});
   };
 
-  const handleClickLoadMore = () => {
-    setLimit(prev => prev + 20);
+  const changePainFlg = editingPainValue.name !== value.name || editingPainValue.query !== value.query;
+
+  const loadLog = () => setInternalLoadLogTrigger(p => p + 1);
+
+  const handleClickTitleHeader = () => {
+    setOpenTitle(prev => !prev);
+    if(changePainFlg) onChangePain(editingPainValue);
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setEditingPainValue((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }))
   };
 
   useEffect(() => {
-    const id = setInterval(() => setInternalLoadLogTrigger(prev => prev + 1), pollingIntervalTime * 1_000);
+    const id = setInterval(() => setInternalLoadLogTrigger(prev => prev + 1),
+      (editingPainValue.pollingIntervalTime || 1) * 1_000);
 
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollingIntervalTime]);
+  }, [editingPainValue.pollingIntervalTime]);
 
-  useEffect(() => loadLog(),
+  useEffect(() => {
+    fetch(`${end_point}/text/all?${encodeURI(editingPainValue.query)}&$limit=${editingPainValue.limit}`)
+      .then(httpToJson)
+      .then(setTexts).catch(console.error);
+  },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loadLogTrigger, internalLoadLogTrigger, limit]);
+    [loadLogTrigger, internalLoadLogTrigger]);
 
   useEffect(() => setEditingPainValue(value),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,9 +71,7 @@ export const Logs = ({
       >
         <StyledTitleHeader
           className="clickable"
-          onClick={() => {
-            setOpenTitle(prev => !prev);
-          }}
+          onClick={handleClickTitleHeader}
         >
           {value.name}
         </StyledTitleHeader>
@@ -72,10 +83,8 @@ export const Logs = ({
               id="Logs_name"
               type="text"
               value={editingPainValue.name}
-              onChange={e => {
-                setEditingPainValue(prev => ({...prev, name: e.target.value}));
-              }}
-              onBlur={() => onChangePainValue(editingPainValue)}
+              onChange={handleChange}
+              onBlur={loadLog}
             />
           </div>
           <div>
@@ -86,10 +95,8 @@ export const Logs = ({
               cols={30}
               rows={5}
               value={editingPainValue.query}
-              onChange={e => {
-                setEditingPainValue(prev => ({...prev, query: e.target.value}));
-              }}
-              onBlur={() => onChangePainValue(editingPainValue)}
+              onChange={handleChange}
+              onBlur={loadLog}
             />
           </div>
           <div>
@@ -98,18 +105,24 @@ export const Logs = ({
               name="limit"
               id="Logs_limit"
               type="number"
-              value={limit}
-              onChange={e => setLimit(Number(e.target.value))}
+              value={value.limit}
+              onChange={e => {
+                setEditingPainValue(prev => ({...prev, limit: parseInt(e.target.value)}));
+              }}
+              onBlur={loadLog}
             />
           </div>
           <div>
-            <label htmlFor="Logs_polling_interval_time">polling interval time</label>
+            <label htmlFor="Logs_pollingIntervalTime">polling interval time</label>
             <input
-              name="polling_interval_time"
-              id="Logs_polling_interval_time"
+              name="pollingIntervalTime"
+              id="Logs_pollingIntervalTime"
               type="number"
-              value={pollingIntervalTime}
-              onChange={e => setPollingIntervalTime(Number(e.target.value))}
+              value={value.pollingIntervalTime}
+              onChange={e => {
+                setEditingPainValue(prev => ({...prev, pollingIntervalTime: parseInt(e.target.value)}));
+              }}
+              onBlur={loadLog}
             />
           </div>
         </StyledForm>

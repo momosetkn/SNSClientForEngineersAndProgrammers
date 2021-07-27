@@ -10,4 +10,5 @@ const appName = 'SNSClientForEngineersAndProgrammers';
 
 export const localStorageKey = {
   myUser: `${appName}_myUser`,
+  pains: `${appName}_pains`,
 };
