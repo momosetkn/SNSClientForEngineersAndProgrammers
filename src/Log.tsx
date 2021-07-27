@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useContext, useEffect, useMemo } from 'react';
 import { useState } from "react";
-import {Text, end_point, uploadImages, Like} from "./Api";
+import {Text, end_point, uploadImages, Like, httpToJson} from "./Api";
 import {faHeart, faImages, faReply, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './index.css';
@@ -71,7 +71,7 @@ export const Log = ({
 
   const handleClickFavorite = async ({textId}: { textId: string }) => {
     const like: Like | undefined = await fetch(`${end_point}/like/${textId}`)
-      .then((res) => res.json()).catch(err => {
+      .then(httpToJson).catch(err => {
         if (err?.response?.status === 404) {
           // 0件なので無視
         } else {
