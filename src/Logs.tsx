@@ -18,12 +18,13 @@ export const Logs = ({
 }) => {
   const [texts, setTexts] = useState<Text[]>([]);
   const [limit, setLimit] = useState(20);
+  const [pollingIntervalTime, setPollingIntervalTime] = useState(20);
   const [editingPainValue, setEditingPainValue] = useState(value);
-  // TODO: 命名…
-  const [loadLogTrigger2, setLoadLogTrigger2] = useState(Number.MIN_SAFE_INTEGER);
+  // Logs個別のトリガー
+  const [internalLoadLogTrigger, setInternalLoadLogTrigger] = useState(Number.MIN_SAFE_INTEGER);
   const [openTitle, setOpenTitle] = useState(false);
 
-  const titleHeight = (openTitle ? 200 : 0 ) + titleHeaderHeight;
+  const titleHeight = (openTitle ? 300 : 0 ) + titleHeaderHeight;
 
   const loadLog = () => {
     fetch(`${end_point}/text/all?${value.query}&$limit=${limit}`)
@@ -36,13 +37,15 @@ export const Logs = ({
   };
 
   useEffect(() => {
-    setInterval(() => setLoadLogTrigger2(prev => prev + 1), 10_000);
+    const id = setInterval(() => setInternalLoadLogTrigger(prev => prev + 1), pollingIntervalTime * 1_000);
+
+    return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pollingIntervalTime]);
 
   useEffect(() => loadLog(),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loadLogTrigger, loadLogTrigger2, limit]);
+    [loadLogTrigger, internalLoadLogTrigger, limit]);
 
   useEffect(() => setEditingPainValue(value),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,41 +64,55 @@ export const Logs = ({
         >
           {value.name}
         </StyledTitleHeader>
-        <div>
-          <form>
-            <div>
-              <input
-                name="name"
-                type="text"
-                value={editingPainValue.name}
-                onChange={e => {
-                  setEditingPainValue(prev => ({...prev, name: e.target.value}));
-                }}
-                onBlur={() => onChangePainValue(editingPainValue)}
-              />
-            </div>
-            <div>
-              <textarea
-                name="query"
-                cols={30}
-                rows={5}
-                value={editingPainValue.query}
-                onChange={e => {
-                  setEditingPainValue(prev => ({...prev, query: e.target.value}));
-                }}
-                onBlur={() => onChangePainValue(editingPainValue)}
-              />
-            </div>
-            <div>
-              <input
-                name="limit"
-                type="number"
-                value={limit}
-                onChange={e => setLimit(Number(e.target.value))}
-              />
-            </div>
-          </form>
-        </div>
+        <StyledForm className="p2">
+          <div>
+            <label htmlFor="Logs_name">name</label>
+            <input
+              name="name"
+              id="Logs_name"
+              type="text"
+              value={editingPainValue.name}
+              onChange={e => {
+                setEditingPainValue(prev => ({...prev, name: e.target.value}));
+              }}
+              onBlur={() => onChangePainValue(editingPainValue)}
+            />
+          </div>
+          <div>
+            <label htmlFor="Logs_query">query</label>
+            <textarea
+              name="query"
+              id="Logs_query"
+              cols={30}
+              rows={5}
+              value={editingPainValue.query}
+              onChange={e => {
+                setEditingPainValue(prev => ({...prev, query: e.target.value}));
+              }}
+              onBlur={() => onChangePainValue(editingPainValue)}
+            />
+          </div>
+          <div>
+            <label htmlFor="Logs_limit">limit</label>
+            <input
+              name="limit"
+              id="Logs_limit"
+              type="number"
+              value={limit}
+              onChange={e => setLimit(Number(e.target.value))}
+            />
+          </div>
+          <div>
+            <label htmlFor="Logs_polling_interval_time">polling interval time</label>
+            <input
+              name="polling_interval_time"
+              id="Logs_polling_interval_time"
+              type="number"
+              value={pollingIntervalTime}
+              onChange={e => setPollingIntervalTime(Number(e.target.value))}
+            />
+          </div>
+        </StyledForm>
       </StyledLogsTitle>
       <StyledTexts titleHeight={titleHeight}>
         {texts.map(text => (
@@ -117,10 +134,18 @@ const StyledLogs = styled.div`
 const StyledLogsTitle = styled.div<{titleHeight: number}>`
   height: ${(x) => x.titleHeight}px;
   overflow: hidden;
+  transition: all 300ms 0s ease;
 `;
 
 const StyledTitleHeader = styled.div`
   height: ${titleHeaderHeight}px;
+`;
+
+const StyledForm = styled.div`
+  & label {
+    display: block;
+    margin-top: 8px;
+  }
 `;
 
 const StyledTexts = styled.div<{titleHeight: number}>`
