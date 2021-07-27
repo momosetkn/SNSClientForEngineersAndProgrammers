@@ -53,17 +53,33 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
     })();
   }, [userMap]);
 
+  useEffect(() => {
+    const handleKeyup = (e: KeyboardEvent) => {
+      e.preventDefault();
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    document.addEventListener('keyup', handleKeyup, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       {open ?
         <StyledMain enabled={open} >
           <StyledBackground />
           <StyledImageOverlay>
-            <FontAwesomeIcon className="clickable ml1" icon={faTimesCircle} onClick={handleClose}/>
-            <form>
+            <StyledHeaderContainer>
+              <div>Settings</div>
+              <FontAwesomeIcon className="clickable ml1" icon={faTimesCircle} onClick={handleClose}/>
+            </StyledHeaderContainer>
+            <StyledForm>
               <div>
+                <label htmlFor="SettingsOverlay_name">name</label>
                 <input
                   name="name"
+                  id="SettingsOverlay_name"
                   type="text"
                   value={state.name}
                   onChange={e => {
@@ -72,17 +88,19 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
                 />
               </div>
               <div>
-              <textarea
-                name="description"
-                cols={30}
-                rows={5}
-                value={state.description}
-                onChange={e => {
-                  update(prev => ({...prev, description: e.target.value}));
-                }}
-              />
+                <label htmlFor="SettingsOverlay_description">description</label>
+                <textarea
+                  name="description"
+                  id="SettingsOverlay_description"
+                  cols={30}
+                  rows={5}
+                  value={state.description}
+                  onChange={e => {
+                    update(prev => ({...prev, description: e.target.value}));
+                  }}
+                />
               </div>
-            </form>
+            </StyledForm>
           </StyledImageOverlay>
         </StyledMain> : null
       }
@@ -113,4 +131,21 @@ const StyledBackground = styled.div`
 
 const StyledImageOverlay = styled.div`
   z-index: ${zIndexes.settings};
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+`;
+
+const StyledHeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const StyledForm = styled.div`
+  & label {
+    display: block;
+    margin-top: 8px;
+  }
 `;
