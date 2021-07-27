@@ -20,7 +20,7 @@ export const Compose = ({
   onSubmit: (value: ComposeValue) => void;
   userList: User[]
 }) => {
-  const [send, setSend] = useState(false);
+  const [sendStatus, setSendStatus] = useState<'waiting' | 'send' | 'sending'>('waiting');
   const [settingsOverlayOpen, setSettingsOverlayOpen] = useState(false);
 
   const { setNotificationContent } =  useContext(ImageMapContext);
@@ -29,9 +29,9 @@ export const Compose = ({
 
   const handleKeyup = useCallback((e: KeyboardEvent) => {
     // Ctrl + Enterで送信
-    if (e.ctrlKey && e.key === 'Enter' && !send) {
+    if (e.ctrlKey && e.key === 'Enter' && sendStatus === 'waiting') {
       // ここで送信処理はせず、sendフラグの変更をuseEffectで察知させて、送ることで、古いデータを送らないようにする
-      setSend(true);
+      setSendStatus('send');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -42,18 +42,21 @@ export const Compose = ({
 
   useEffect(() => {
     (async () => {
-      if (send && value.text.trim()) {
-        setSend(false);
+      if (sendStatus === 'send' && value.text.trim()) {
+        // 他と競合して、同時に発火するのを防ぐため、一番先に実行されたものはステータスを変更しておく。
+        setSendStatus('sending');
         try {
           await onSubmit(value);
           onChange(initialComposeValue);
         } catch (e) {
           setNotificationContent({text: 'エラー発生'});
           console.error(e);
+        } finally {
+          setSendStatus('waiting');
         }
       }
     })();
-  }, [send, value, onChange, onSubmit, setNotificationContent]);
+  }, [sendStatus, value, onChange, onSubmit, setNotificationContent]);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -70,6 +73,8 @@ export const Compose = ({
     });
   };
 
+  const loading = sendStatus !== 'waiting';
+
   return (
     <StyledMain>
       <StyledForm>
@@ -80,11 +85,13 @@ export const Compose = ({
             placeholder="ツイートへの返信"
             value={value.replyToTextId}
             onChange={handleChangeComposeValue}
+            disabled={loading}
           />
           <select
             name="replyToUserId"
             value={value.replyToUserId}
             onChange={handleChangeComposeValue}
+            disabled={loading}
           >
             <option value="">-</option>
             {userList.map(user => (
@@ -106,12 +113,13 @@ export const Compose = ({
             cols={50}
             value={value.text}
             onChange={e => onChange({...value, text: e.target.value})}
+            disabled={loading}
           />
           <FontAwesomeIcon
-            className="clickable"
+            className={!loading ? 'clickable' : ''}
             icon={faPaperPlane}
             title="post"
-            onClick={(e) => {e.preventDefault();setSend(true);}}
+            onClick={(e) => {e.preventDefault();!loading && setSendStatus('send');}}
           />
           <div>
             {value.files?.map((file, index) => (
@@ -139,7 +147,7 @@ const StyledMain = styled.div`
   display: flex;
 `;
 
-const StyledForm = styled.div`
+const StyledForm = styled.form`
   width: 500px;
 `;
 
