@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import React, {useContext, useEffect, useState} from "react";
-import {zIndexes} from "./Constants";
+import {localStorageKey, zIndexes} from "./Constants";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import {end_point, httpToJson, Return, User} from "./Api";
@@ -34,7 +34,11 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
 
   useEffect(() => {
     (async () => {
+      // ユーザー情報のサーバーからの取得（localStorageから取得できなかったときに発動）
       if(!Object.entries(userMap).length) return;
+
+      // localStorageから取得できてれば、ここを通らない。
+      if(state.name || state.description) return;
 
       const res: Return = await apply({name: '', description: ''});
       const dummyMyUser: User = await fetch(`${end_point}/user/${res.id}`, {
@@ -51,6 +55,7 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
       update(myUserValue);
       await apply(myUserValue);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userMap]);
 
   useEffect(() => {
@@ -61,8 +66,22 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
       }
     };
     document.addEventListener('keyup', handleKeyup, false);
+
+    // ユーザー初期値
+    const localStorageMyUser = localStorage.getItem(localStorageKey.myUser);
+    if (localStorageMyUser) {
+      update(JSON.parse(localStorageMyUser));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if(!state.name) return;
+    if(!state.description) return;
+
+    localStorage.setItem(localStorageKey.myUser, JSON.stringify(state));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <>

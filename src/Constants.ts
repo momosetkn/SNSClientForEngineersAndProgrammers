@@ -5,3 +5,9 @@ export const zIndexes = {
   settings: 250,
   notificationBar: 500,
 };
+
+const appName = 'SNSClientForEngineersAndProgrammers';
+
+export const localStorageKey = {
+  myUser: `${appName}_myUser`,
+};
