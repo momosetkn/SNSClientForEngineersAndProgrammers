@@ -71,7 +71,7 @@ export const Log = ({
     setComposeValue({...composeValue, replyToTextId: x.textId,  replyToUserId: x.userId})
   };
 
-  const handleClickFavorite = async ({textId}: { textId: string }) => {
+  const handleClickLike = async ({textId}: { textId: string }) => {
     const like: Like | undefined = await fetch(`${end_point}/like/${textId}`)
       .then(httpToJson).catch(err => {
         if (err?.response?.status === 404) {
@@ -177,16 +177,16 @@ export const Log = ({
         <FontAwesomeIcon
           className="clickable"
           icon={faReply}
-          title="reply"
+          title="Reply"
           onClick={() => handleReplyTo({textId: text.id, userId: text._user_id})}
         />
         <div
           className="clickable ml2"
-          onClick={() => handleClickFavorite({textId: text.id})}
+          onClick={() => handleClickLike({textId: text.id})}
         >
           <FontAwesomeIcon
             icon={faHeart}
-            title="favorite"
+            title="Like"
           />
           <span>{likeCount}</span>
         </div>
@@ -194,7 +194,7 @@ export const Log = ({
           <FontAwesomeIcon
             className="clickable ml2"
             icon={faImages}
-            title="images"
+            title="Images"
           />
           <input
             id={`image_upload_${text.id}`}
