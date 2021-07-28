@@ -15,3 +15,13 @@ export const asyncConvertBase64 = async (file: File) => {
   }
   return base64;
 }
+
+export const eq = (a: any, b: any): boolean => {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object') return false;
+  if (typeof b !== 'object') return false;
+  const aEntries = Object.entries(a);
+  const bEntries = Object.entries(b);
+  if (aEntries.length !== bEntries.length) return false;
+  return aEntries.every(([aKey, aValue]) => eq(aValue, b[aKey]));
+};

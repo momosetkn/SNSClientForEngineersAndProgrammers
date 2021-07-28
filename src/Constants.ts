@@ -12,3 +12,9 @@ export const localStorageKey = {
   myUser: `${appName}_myUser`,
   pains: `${appName}_pains`,
 };
+
+export const colors = {
+  border: '#ccc',
+  background: '#fff',
+  action: '#555',
+};

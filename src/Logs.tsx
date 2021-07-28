@@ -4,6 +4,8 @@ import {Log} from "./Log";
 import styled from "styled-components";
 import {composeHeight} from "./Compose";
 import {PainValue} from "./MainPage";
+import {eq} from "./Util";
+import {colors} from "./Constants";
 
 const titleHeaderHeight = 22;
 
@@ -32,10 +34,7 @@ export const Logs = ({
 
   const handleClickTitleHeader = () => {
     setOpenTitle(prev => !prev);
-    if (editingPainValue.name !== value.name
-      || editingPainValue.query !== value.query
-      || editingPainValue.limit !== value.limit
-      || editingPainValue.pollingIntervalTime !== value.pollingIntervalTime) onChangePain(editingPainValue);
+    if (!eq(editingPainValue, value)) onChangePain(editingPainValue);
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -144,14 +143,19 @@ export const Logs = ({
   );
 }
 
+const margin = 8;
+
 const StyledLogs = styled.div`
   width: 320px;
+  margin: ${margin}px 0 ${margin}px ${margin}px;
+  border: 1px solid ${colors.border};
 `;
 
 const StyledLogsTitle = styled.div<{titleHeight: number}>`
   height: ${(x) => x.titleHeight}px;
   overflow: hidden;
   transition: all 300ms 0s ease;
+  border-bottom: 1px solid ${colors.border};
 `;
 
 const StyledTitleHeader = styled.div`
@@ -166,6 +170,19 @@ const StyledForm = styled.div`
 `;
 
 const StyledTexts = styled.div<{titleHeight: number}>`
-  height: calc(100vh - ${(x) => composeHeight + x.titleHeight}px);
+  // margin上下とborder1px上下
+  height: calc(100vh - ${(x) => composeHeight + x.titleHeight + (margin + 1) * 2}px);
   overflow-y: auto;
+  ::-webkit-scrollbar{
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track{
+    background: ${colors.background};
+    border: none;
+    // box-shadow: inset 0 0 2px #777; 
+  }
+  ::-webkit-scrollbar-thumb{
+    background: ${colors.border};
+    box-shadow: none;
+  }
 `;

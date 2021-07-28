@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import React, {useContext, useEffect, useState} from "react";
-import {localStorageKey, zIndexes} from "./Constants";
+import {colors, localStorageKey, zIndexes} from "./Constants";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import {end_point, httpToJson, Return, User} from "./Api";
@@ -150,7 +150,7 @@ const StyledBackground = styled.div`
 
 const StyledImageOverlay = styled.div`
   z-index: ${zIndexes.settings};
-  background: white;
+  background: ${colors.background};
   padding: 16px;
   border-radius: 8px;
 `;

@@ -12,6 +12,7 @@ import {
   SetPreviewImagesContext
 } from "./MainPage";
 import {asyncConvertBase64} from "./Util";
+import {colors} from "./Constants";
 
 export const Log = ({
   text,
@@ -36,7 +37,7 @@ export const Log = ({
     const now = new Date();
     const date = new Date(text._created_at);
     const diff = (now.getTime() - date.getTime()) / 1_000;
-    let timeDiff = "";
+    let timeDiff;
     if (diff < 60) {
       timeDiff = `${Math.floor(diff)}秒前`;
     } else if (diff / 60 < 60) {
@@ -131,7 +132,7 @@ export const Log = ({
     };
 
   return (
-    <StyledMain>
+    <StyledMain child={!!onClose}>
       <StyledMeta>
         <div
           title={userMap[text._user_id]?.description || text._user_id}>
@@ -172,20 +173,23 @@ export const Log = ({
         ))
         : null
       }
-      <div className="flex mt1">
+      <StyledActions>
         <FontAwesomeIcon
           className="clickable"
           icon={faReply}
           title="reply"
           onClick={() => handleReplyTo({textId: text.id, userId: text._user_id})}
         />
-        <FontAwesomeIcon
+        <div
           className="clickable ml2"
-          icon={faHeart}
-          title="favorite"
           onClick={() => handleClickFavorite({textId: text.id})}
-        />
-        {likeCount}
+        >
+          <FontAwesomeIcon
+            icon={faHeart}
+            title="favorite"
+          />
+          <span>{likeCount}</span>
+        </div>
         <label htmlFor={`image_upload_${text.id}`}>
           <FontAwesomeIcon
             className="clickable ml2"
@@ -201,7 +205,7 @@ export const Log = ({
             onChange={handleChangeImageFile}
           />
         </label>
-      </div>
+      </StyledActions>
       {
         replyDestination.open && replyDestination.text?
           (
@@ -221,8 +225,10 @@ export const Log = ({
   );
 };
 
-const StyledMain = styled.div`
-  border: 1px solid #ccc;
+const StyledMain = styled.div<{child: boolean}>`
+  ${x => x.child ? 
+  `border-top: 1px solid ${colors.border};` 
+  : `border-bottom: 1px solid ${colors.border};`}
   padding: 8px;
 `;
 
@@ -241,6 +247,12 @@ const StyledText = styled.div`
   word-wrap: break-word;
   white-space: pre-wrap;
   padding-top: 2px;
+`;
+
+const StyledActions = styled.div`
+  display: flex;
+  margin-top: 8px;
+  color: ${colors.action};
 `;
 
 const StyledImg = styled.img`
