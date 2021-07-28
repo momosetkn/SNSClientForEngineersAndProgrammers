@@ -131,7 +131,7 @@ export const Compose = ({
           <div>
             {value.files?.map((file, index) => (
               <div>
-                {file.name}
+                {`${file.name}(${Math.floor(file.size / 1024)}kb)`}
                 <FontAwesomeIcon
                   className="clickable ml1"
                   icon={faTimesCircle}
