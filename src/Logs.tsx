@@ -60,7 +60,8 @@ export const Logs = ({
   }, [editingPainValue.pollingIntervalTime]);
 
   useEffect(() => {
-    fetch(`${end_point}/text/all?${encodeURI(editingPainValue.query)}&$limit=${editingPainValue.limit}`)
+    const q = encodeURI(editingPainValue.query.trim().replaceAll('\n', ''));
+    fetch(`${end_point}/text/all?${q}&$limit=${editingPainValue.limit}`)
       .then(httpToJson)
       .then(setTexts).catch(console.error);
   },
