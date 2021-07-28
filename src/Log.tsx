@@ -13,6 +13,7 @@ import {
 } from "./MainPage";
 import {asyncConvertBase64} from "./Util";
 import {colors} from "./Constants";
+import {clearInterval} from "timers";
 
 export const Log = ({
   text,
@@ -56,7 +57,9 @@ export const Log = ({
   }, [text, userMap, updateTimeTrigger]);
 
   useEffect(() => {
-    setInterval(() => setUpdateTimeTrigger(prev => prev + 1), 5_000);
+    const id = setInterval(() => setUpdateTimeTrigger(prev => prev + 1), 5_000);
+
+    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
