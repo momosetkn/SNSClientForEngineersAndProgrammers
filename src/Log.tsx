@@ -13,7 +13,6 @@ import {
 } from "./MainPage";
 import {asyncConvertBase64} from "./Util";
 import {colors} from "./Constants";
-import {clearInterval} from "timers";
 
 export const Log = ({
   text,
