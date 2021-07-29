@@ -1,17 +1,17 @@
 import styled from "styled-components";
 import {useEffect, useState} from "react";
 
-export const DragDropOverlay = ({onDropFile}:{onDropFile: (file: File) => void}) => {
+export const DragDropOverlay = ({onDropFiles}:{onDropFiles: (files: File[]) => void}) => {
   const [drag, setDrag] = useState(false);
   // addEventListenerを都度貼り替えるのが面倒なため、state経由でuseEffectを発火させ、onDropFileさせる
-  const [file, setFile] = useState<File | undefined>();
+  const [files, setFiles] = useState<File[] | undefined>();
 
   useEffect(() => {
-    if(file){
-      onDropFile(file);
-      setFile(undefined);
+    if(files){
+      onDropFiles(files);
+      setFiles(undefined);
     }
-  }, [file, onDropFile]);
+  }, [files, onDropFiles]);
 
   useEffect(() => {
     const handleDrop =  (ev: any) => {
@@ -19,14 +19,7 @@ export const DragDropOverlay = ({onDropFile}:{onDropFile: (file: File) => void})
       ev.preventDefault();
 
       if (ev.dataTransfer.items) {
-        // Use DataTransferItemList interface to access the file(s)
-        for (let i = 0; i < ev.dataTransfer.items.length; i++) {
-          // If dropped items aren't files, reject them
-          if (ev.dataTransfer.items[i].kind === 'file') {
-            const file = ev.dataTransfer.items[i].getAsFile();
-            setFile(file);
-          }
-        }
+        setFiles(Array.from(ev.dataTransfer.files));
       } else {
         // Use DataTransfer interface to access the file(s)
         for (let i = 0; i < ev.dataTransfer.files.length; i++) {
@@ -40,19 +33,25 @@ export const DragDropOverlay = ({onDropFile}:{onDropFile: (file: File) => void})
       setDrag(true);
     };
 
-    const dragOverHandler = (ev: any) =>  ev.preventDefault();
+    const dragOverHandler = (ev: any) =>  {
+      console.log('dragover');
+      // Dropしたときにブラウザで画像を開いてしまうため、これを入れる
+      ev.preventDefault();
+    }
 
     const handleDragLeave = (ev: any) =>  {
       ev.preventDefault();
-      console.log('leave', ev);
+      console.log('dragleave', ev);
       if (!ev.fromElement){
+        console.log('dragleave out of browser');
+        // ドラッグがブラウザの範囲外に行ったときに発動
         setDrag(false);
       }
     };
 
     document.addEventListener('drop', handleDrop);
     document.addEventListener('dragenter', dragEnterHandler);
-    document.addEventListener('dragover', dragOverHandler);//kesu nokosu
+    document.addEventListener('dragover', dragOverHandler);
     document.addEventListener('dragleave', handleDragLeave);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

@@ -37,14 +37,15 @@ export const Compose = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDropFile = async (file: File) => {
-    const base64 = await asyncConvertBase64(file);
-    if (!base64) {
-      console.error('画像が大きすぎます');
-      setNotificationContent({text: '画像が大きすぎます', type: "error"});
-      return;
-    }
-    onChange({...value, files: [...(value.files || []), file]});
+  const handleDropFiles = async (files: File[]) => {
+    await Promise.all(files.map(async (file) => {
+      const base64 = await asyncConvertBase64(file);
+      if (!base64) {
+        console.error('画像が大きすぎます');
+        setNotificationContent({text: '画像が大きすぎます', type: "error"});
+      }
+    }));
+    onChange({...value, files: [...(value.files || []), ...files]});
   };
 
   useEffect(() => {
@@ -130,7 +131,7 @@ export const Compose = ({
           />
           <div>
             {value.files?.map((file, index) => (
-              <div>
+              <div key={file.name}>
                 {`${file.name}(${Math.floor(file.size / 1024)}kb)`}
                 <FontAwesomeIcon
                   className="clickable ml1"
@@ -144,7 +145,7 @@ export const Compose = ({
       </StyledForm>
       <FontAwesomeIcon className="clickable ml1" icon={faCog} onClick={() => setSettingsOverlayOpen(true)}/>
       <SettingsOverlay open={settingsOverlayOpen} onClose={() => setSettingsOverlayOpen(false)}/>
-      <DragDropOverlay onDropFile={handleDropFile}/>
+      <DragDropOverlay onDropFiles={handleDropFiles}/>
     </StyledMain>
   );
 };
