@@ -24,7 +24,7 @@ export const Compose = ({
   const [sendStatus, setSendStatus] = useState<'waiting' | 'send' | 'sending'>('waiting');
   const [settingsOverlayOpen, setSettingsOverlayOpen] = useState(false);
 
-  const { setNotificationContent } =  useContext(ImageMapContext);
+  const { fireNotificationContent } =  useContext(ImageMapContext);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -42,7 +42,7 @@ export const Compose = ({
       const base64 = await asyncConvertBase64(file);
       if (!base64) {
         console.error('画像が大きすぎます');
-        setNotificationContent({text: '画像が大きすぎます', type: "error"});
+        fireNotificationContent({text: '画像が大きすぎます', type: "error"});
       }
     }));
     onChange({...value, files: [...(value.files || []), ...files]});
@@ -57,14 +57,14 @@ export const Compose = ({
           await onSubmit(value);
           onChange(initialComposeValue);
         } catch (e) {
-          setNotificationContent({text: 'エラー発生'});
+          fireNotificationContent({text: 'エラー発生'});
           console.error(e);
         } finally {
           setSendStatus('waiting');
         }
       }
     })();
-  }, [sendStatus, value, onChange, onSubmit, setNotificationContent]);
+  }, [sendStatus, value, onChange, onSubmit, fireNotificationContent]);
 
   useEffect(() => {
     if (inputRef.current) {

@@ -1,7 +1,6 @@
-import React, { createContext, useEffect, useMemo } from 'react';
-import { useState } from "react";
-import { Compose } from "./Compose";
-import {end_point, User, Image, uploadImages, Return, Like, httpToJson} from "./Api";
+import React, {createContext, useEffect, useMemo, useState} from 'react';
+import {Compose} from "./Compose";
+import {end_point, httpToJson, Image, Like, Return, uploadImages, User} from "./Api";
 import './index.css';
 import styled from "styled-components";
 import {Logs} from "./Logs";
@@ -9,6 +8,7 @@ import {PreviewImagesOverlay} from "./PreviewImagesOverlay";
 import {NotificationBar, NotificationContent} from "./NotificationBar";
 import {asyncConvertBase64} from "./Util";
 import {localStorageKey} from "./Constants";
+import {ConfirmModal, ConfirmModalValue} from "./ConfirmModal";
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string; files?: File[]}
 
@@ -24,12 +24,14 @@ export const ImageMapContext = createContext<{
   imageMap: Record<string, Image[]>,
   likeMap: Record<string, Like>,
   userMap: Record<string, User>,
-  setNotificationContent: (value: NotificationContent) => void,
+  fireNotificationContent: (value: NotificationContent) => void,
+  fireConfirmModal: (value: ConfirmModalValue) => Promise<boolean>,
 }>({
   imageMap: {},
   likeMap: {},
   userMap: {},
-  setNotificationContent: (_: NotificationContent) => {},
+  fireNotificationContent: (_: NotificationContent) => {},
+  fireConfirmModal: async (_: ConfirmModalValue) => false,
 });
 
 export const LoadImagesContext = createContext<() => void>(() => {});
@@ -73,7 +75,8 @@ export const MainPage = () => {
   const [previewImages, setPreviewImages] = useState<{images: string[], index: number}>({images: [], index: 0});
   const [openPreviewImagesOverlay, setOpenPreviewImagesOverlay] = useState(false);
   const [notificationContent, setNotificationContent] = useState<NotificationContent>();
-  // TODO: localstorage?
+  const [confirmModalValue, setConfirmModalValue] = useState<ConfirmModalValue>({content: '', action: "ok", title: ''});
+  const [confirmModalPromise, setConfirmModalPromise] = useState(() => (_: boolean) => {});
   const [pains, setPains] = useState<PainValue[]>([]);
 
   const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: User) => ({
@@ -122,17 +125,17 @@ export const MainPage = () => {
       .then(setLikeList);
   };
 
-  const handleChangePain = (value: PainValue, index: number) => {
-    const sameNamePain = pains.find((pain, i) => pain.name === value.name && i !== index);
+  const handleChangePain = (index: number, value?: PainValue, ) => {
+    const sameNamePain = pains.find((pain, i) => pain.name === value?.name && i !== index);
     if(sameNamePain) {
       setNotificationContent({text: "同一のpain名は設定できません", type: 'error'});
       return;
     }
     setPains(prev => {
-      const newList = [...prev];
-      newList[index] = value;
-      return newList
-    })
+      const left = prev.slice(0, index);
+      const right = prev.slice(index + 1);
+      return value ? [...left, value, ...right] : [...left, ...right];
+    });
   };
 
   const handleSubmit = async ({text, replyToUserId, replyToTextId, files}: ComposeValue) => {
@@ -160,6 +163,13 @@ export const MainPage = () => {
     }
 
     setLoadLogTrigger(prev => prev+1);
+  };
+
+  const fireConfirmModal = async (value: ConfirmModalValue) => {
+    setConfirmModalValue(value);
+    return await new Promise((resolve) => {
+      setConfirmModalPromise(() => resolve);
+    }) as boolean;
   };
 
   useEffect(() => {
@@ -191,7 +201,7 @@ export const MainPage = () => {
     <StyledMain>
       <SetPreviewImagesContext.Provider value={setPreviewImages}>
         <LoadImagesContext.Provider value={loadImages} >
-          <ImageMapContext.Provider value={{imageMap, likeMap, userMap, setNotificationContent }}>
+          <ImageMapContext.Provider value={{imageMap, likeMap, userMap, fireConfirmModal, fireNotificationContent: setNotificationContent }}>
             <ComposeContext.Provider value={{composeValue, setComposeValue}}>
               <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
               <div className="flex">
@@ -200,7 +210,7 @@ export const MainPage = () => {
                     key={list.name}
                     value={list}
                     loadLogTrigger={loadLogTrigger}
-                    onChangePain={value => handleChangePain(value, index)}
+                    onChangePain={value => handleChangePain(index, value)}
                   />
                 ))}
               </div>
@@ -215,6 +225,7 @@ export const MainPage = () => {
         index={previewImages.index}
       />
       <NotificationBar content={notificationContent} />
+      <ConfirmModal value={confirmModalValue} onClose={() => confirmModalPromise(false)} onAccept={() => confirmModalPromise(true)}/>
     </StyledMain>
   );
 };

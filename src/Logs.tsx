@@ -1,9 +1,9 @@
 import {end_point, httpToJson, Text} from "./Api";
-import React, {ChangeEvent, useEffect, useState} from "react";
+import React, {ChangeEvent, useContext, useEffect, useState} from "react";
 import {Log} from "./Log";
 import styled from "styled-components";
 import {composeHeight} from "./Compose";
-import {PainValue} from "./MainPage";
+import {ImageMapContext, PainValue} from "./MainPage";
 import {eq} from "./Util";
 import {colors} from "./Constants";
 
@@ -15,9 +15,11 @@ export const Logs = ({
   loadLogTrigger,
 } : {
   value: PainValue,
-  onChangePain: (value: PainValue) => void,
+  onChangePain: (value?: PainValue) => void,
   loadLogTrigger?: number,
 }) => {
+  const {fireConfirmModal} = useContext(ImageMapContext)
+
   const [texts, setTexts] = useState<Text[]>([]);
   const [editingPainValue, setEditingPainValue] = useState(value);
   // Logs個別のトリガー
@@ -49,6 +51,11 @@ export const Logs = ({
       ...prev,
       [event.target.name]: parseInt(event.target.value),
     }))
+  };
+
+  const handleClickDeleteButton = async () => {
+    const result: boolean = await fireConfirmModal({title: '', content: 'このペインを削除しますか？', action: 'delete'});
+    if (result) onChangePain();
   };
 
   useEffect(() => {
@@ -83,7 +90,7 @@ export const Logs = ({
         >
           {value.name}
         </StyledTitleHeader>
-        <StyledForm className="p2">
+        <StyledForm>
           <div>
             <label htmlFor={`${value.name}_Logs_name`}>name</label>
             <input
@@ -129,6 +136,9 @@ export const Logs = ({
               onBlur={loadLog}
             />
           </div>
+          <div>
+            <button className="mt1" onClick={handleClickDeleteButton}>削除</button>
+          </div>
         </StyledForm>
       </StyledLogsTitle>
       <StyledTexts titleHeight={titleHeight}>
@@ -164,6 +174,7 @@ const StyledTitleHeader = styled.div`
 `;
 
 const StyledForm = styled.div`
+  padding: 8px 16px 16px 16px;
   & label {
     display: block;
     margin-top: 8px;

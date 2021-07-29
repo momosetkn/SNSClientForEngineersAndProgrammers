@@ -29,7 +29,7 @@ export const Log = ({
   const [likeCount, setLikeCount] = useState(0);
 
   const { composeValue, setComposeValue } = useContext(ComposeContext);
-  const {imageMap, likeMap, userMap, setNotificationContent} = useContext(ImageMapContext);
+  const {imageMap, likeMap, userMap, fireNotificationContent} = useContext(ImageMapContext);
   const loadImages = useContext(LoadImagesContext);
   const setPreviewImages = useContext(SetPreviewImagesContext);
 
@@ -104,7 +104,7 @@ export const Log = ({
       const base64 = await asyncConvertBase64(file);
       if(!base64) {
         console.error('画像が大きすぎます');
-        setNotificationContent({text: '画像が大きすぎます', type: "error"})
+        fireNotificationContent({text: '画像が大きすぎます', type: "error"})
         continue;
       }
       await uploadImages({base64s: [base64], bindTextId: text.id});
