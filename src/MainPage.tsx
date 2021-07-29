@@ -9,6 +9,7 @@ import {NotificationBar, NotificationContent} from "./NotificationBar";
 import {asyncConvertBase64} from "./Util";
 import {localStorageKey} from "./Constants";
 import {ConfirmModal, ConfirmModalValue} from "./ConfirmModal";
+import {SettingsOverlay} from "./SettingsOverlay";
 
 export type ComposeValue = { text: string, replyToTextId: string, replyToUserId: string; files?: File[]}
 
@@ -26,12 +27,14 @@ export const ImageMapContext = createContext<{
   userMap: Record<string, User>,
   fireNotificationContent: (value: NotificationContent) => void,
   fireConfirmModal: (value: ConfirmModalValue) => Promise<boolean>,
+  openSettingsOverlay: () => void,
 }>({
   imageMap: {},
   likeMap: {},
   userMap: {},
   fireNotificationContent: (_: NotificationContent) => {},
   fireConfirmModal: async (_: ConfirmModalValue) => false,
+  openSettingsOverlay: () => {},
 });
 
 export const LoadImagesContext = createContext<() => void>(() => {});
@@ -78,6 +81,7 @@ export const MainPage = () => {
   const [confirmModalValue, setConfirmModalValue] = useState<ConfirmModalValue>({content: '', action: "ok", title: ''});
   const [confirmModalPromise, setConfirmModalPromise] = useState(() => (_: boolean) => {});
   const [pains, setPains] = useState<PainValue[]>([]);
+  const [settingsOverlayOpen, setSettingsOverlayOpen] = useState(false);
 
   const userMap: Record<string, User> = useMemo(() => userList.reduce((acc: any, cur: User) => ({
     ...acc,
@@ -201,7 +205,7 @@ export const MainPage = () => {
     <StyledMain>
       <SetPreviewImagesContext.Provider value={setPreviewImages}>
         <LoadImagesContext.Provider value={loadImages} >
-          <ImageMapContext.Provider value={{imageMap, likeMap, userMap, fireConfirmModal, fireNotificationContent: setNotificationContent }}>
+          <ImageMapContext.Provider value={{imageMap, likeMap, userMap, fireConfirmModal, fireNotificationContent: setNotificationContent, openSettingsOverlay: () => setSettingsOverlayOpen(true) }}>
             <ComposeContext.Provider value={{composeValue, setComposeValue}}>
               <Compose value={composeValue} onChange={setComposeValue} onSubmit={handleSubmit} userList={userList} />
               <div className="flex">
@@ -218,6 +222,7 @@ export const MainPage = () => {
           </ImageMapContext.Provider>
         </LoadImagesContext.Provider>
       </SetPreviewImagesContext.Provider>
+      <SettingsOverlay open={settingsOverlayOpen} onClose={() => setSettingsOverlayOpen(false)} pains={pains} onChangePains={setPains}/>
       <PreviewImagesOverlay
         open={openPreviewImagesOverlay}
         onClose={() => setOpenPreviewImagesOverlay(false)}

@@ -5,7 +5,6 @@ import {faCog, faPaperPlane, faTimesCircle} from "@fortawesome/free-solid-svg-ic
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 import { DragDropOverlay } from "./DragDropOverlay";
-import {SettingsOverlay} from "./SettingsOverlay";
 import {asyncConvertBase64} from "./Util";
 
 export const composeHeight = 100;
@@ -22,9 +21,8 @@ export const Compose = ({
   userList: User[]
 }) => {
   const [sendStatus, setSendStatus] = useState<'waiting' | 'send' | 'sending'>('waiting');
-  const [settingsOverlayOpen, setSettingsOverlayOpen] = useState(false);
 
-  const { fireNotificationContent } =  useContext(ImageMapContext);
+  const { fireNotificationContent, openSettingsOverlay } =  useContext(ImageMapContext);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -143,8 +141,7 @@ export const Compose = ({
           </div>
         </div>
       </StyledForm>
-      <FontAwesomeIcon className="clickable ml1" icon={faCog} onClick={() => setSettingsOverlayOpen(true)}/>
-      <SettingsOverlay open={settingsOverlayOpen} onClose={() => setSettingsOverlayOpen(false)}/>
+      <FontAwesomeIcon className="clickable ml1" icon={faCog} onClick={() => openSettingsOverlay()}/>
       <DragDropOverlay onDropFiles={handleDropFiles}/>
     </StyledMain>
   );

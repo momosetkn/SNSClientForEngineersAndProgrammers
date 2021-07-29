@@ -4,22 +4,25 @@ import {colors, localStorageKey, zIndexes} from "./Constants";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import {end_point, httpToJson, Return, User} from "./Api";
-import {ImageMapContext} from "./MainPage";
+import {ImageMapContext, PainValue} from "./MainPage";
 
-type State = {
-  name: string,
-  description: string,
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  pains: PainValue[];
+  onChangePains: (value: PainValue[]) => void;
 };
 
-export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => void}) => {
-  const [state, update] = useState<State>({
+export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) => {
+  const [user, setUser] = useState({
     name: '',
     description: '',
   });
+  const [editingPains, setEditingPains] = useState('');
 
   const { userMap } = useContext(ImageMapContext);
 
-  const apply = async (value: State) => {
+  const apply = async (value: { name: string, description: string }) => {
     return await fetch(`${end_point}/user/create_user`, {
       method: "POST",
       headers: {Authorization: "HelloWorld"},
@@ -28,7 +31,8 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
   };
 
   const handleClose = () => {
-    apply(state);
+    apply(user);
+    onChangePains(JSON.parse(editingPains));
     onClose();
   };
 
@@ -38,7 +42,7 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
       if(!Object.entries(userMap).length) return;
 
       // localStorageから取得できてれば、ここを通らない。
-      if(state.name || state.description) return;
+      if(user.name || user.description) return;
 
       const res: Return = await apply({name: '', description: ''});
       const dummyMyUser: User = await fetch(`${end_point}/user/${res.id}`, {
@@ -52,7 +56,7 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
         name: myUser.name,
         description: myUser.description,
       };
-      update(myUserValue);
+      setUser(myUserValue);
       await apply(myUserValue);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,7 +66,7 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
     const handleKeyup = (e: KeyboardEvent) => {
       e.preventDefault();
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
     document.addEventListener('keyup', handleKeyup, false);
@@ -70,18 +74,24 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
     // ユーザー初期値
     const localStorageMyUser = localStorage.getItem(localStorageKey.myUser);
     if (localStorageMyUser) {
-      update(JSON.parse(localStorageMyUser));
+      setUser(JSON.parse(localStorageMyUser));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if(!state.name) return;
-    if(!state.description) return;
+    if(!user.name) return;
+    if(!user.description) return;
 
-    localStorage.setItem(localStorageKey.myUser, JSON.stringify(state));
+    localStorage.setItem(localStorageKey.myUser, JSON.stringify(user));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [user]);
+
+
+  useEffect(() => {
+    setEditingPains(JSON.stringify(pains, null, 2));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pains]);
 
   return (
     <>
@@ -100,9 +110,9 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
                   name="name"
                   id="SettingsOverlay_name"
                   type="text"
-                  value={state.name}
+                  value={user.name}
                   onChange={e => {
-                    update(prev => ({...prev, name: e.target.value}));
+                    setUser(prev => ({...prev, name: e.target.value}));
                   }}
                 />
               </div>
@@ -113,9 +123,22 @@ export const SettingsOverlay = ({open, onClose}: {open: boolean; onClose: () => 
                   id="SettingsOverlay_description"
                   cols={30}
                   rows={5}
-                  value={state.description}
+                  value={user.description}
                   onChange={e => {
-                    update(prev => ({...prev, description: e.target.value}));
+                    setUser(prev => ({...prev, description: e.target.value}));
+                  }}
+                />
+              </div>
+              <div>
+                <label htmlFor="SettingsOverlay_pains">pains</label>
+                <textarea
+                  name="pains"
+                  id="SettingsOverlay_pains"
+                  cols={50}
+                  rows={15}
+                  value={editingPains}
+                  onChange={e => {
+                    setEditingPains(e.target.value);
                   }}
                 />
               </div>
