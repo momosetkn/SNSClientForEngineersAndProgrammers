@@ -24,7 +24,7 @@ export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) =>
 
   const apply = async (value: { name: string, description: string }) => {
     return await fetch(`${end_point}/user/create_user`, {
-      method: "POST",
+      method: "PUT",
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(value)
     }).then(httpToJson);
