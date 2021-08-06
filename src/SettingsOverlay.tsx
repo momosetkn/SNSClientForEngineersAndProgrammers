@@ -6,6 +6,7 @@ import {faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import {end_point, httpToJson, Return, User} from "./Api";
 import {ImageMapContext, PainValue} from "./MainPage";
 import {eq} from "./Util";
+import {useDocumentKeyboardEventCallback} from "./Hooks";
 
 type Props = {
   open: boolean;
@@ -78,16 +79,12 @@ export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userMap]);
 
-  useEffect(() => {
-    const handleKeyup = (e: KeyboardEvent) => {
-      e.preventDefault();
+  useDocumentKeyboardEventCallback('keyup',
+    e => {
       if (e.key === 'Escape') {
         handleClose();
       }
-    };
-    document.addEventListener('keyup', handleKeyup, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    });
 
   useEffect(() => {
     setEditingUser(user)

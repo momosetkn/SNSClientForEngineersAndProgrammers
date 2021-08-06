@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import {useEffect, useRef, useState} from "react";
 import {zIndexes} from "./Constants";
+import {useDocumentKeyboardEventCallback} from "./Hooks";
 
 export const PreviewImagesOverlay = ({open, onClose, images, index}: {open: boolean; onClose: () => void; images: string[], index: number}) => {
   const [viewingIndex, setViewingIndex] = useState(index);
   const [imageSize, setImageSize] = useState<{width: number, height: number} | undefined>();
-  const [keyup, setKeyup] = useState<string | undefined>();
   const [offsetX, setOffsetX] = useState<number>(0);
   const imgElementRef = useRef<HTMLImageElement>(null);
 
@@ -13,25 +13,16 @@ export const PreviewImagesOverlay = ({open, onClose, images, index}: {open: bool
     setViewingIndex(index);
   }, [index]);
 
-  useEffect(() => {
-    if (keyup === 'Escape') {
-      onClose();
-    } else if (keyup === 'ArrowLeft') {
-      setViewingIndex(prev => Math.max(prev - 1, 0));
-    } else if (keyup === 'ArrowRight') {
-      setViewingIndex(prev => Math.min(prev + 1, images.length - 1));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyup, setViewingIndex]);
-
-  useEffect(() => {
-    const handleKeyup = (e: KeyboardEvent) => {
-      e.preventDefault();
-      setKeyup(e.key);
-    };
-    document.addEventListener('keyup', handleKeyup, false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useDocumentKeyboardEventCallback('keyup',
+    e => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowLeft') {
+        setViewingIndex(prev => Math.max(prev - 1, 0));
+      } else if (e.key === 'ArrowRight') {
+        setViewingIndex(prev => Math.min(prev + 1, images.length - 1));
+      }
+    });
 
   const imageSrc = images[viewingIndex];
 
