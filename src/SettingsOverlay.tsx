@@ -5,6 +5,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import {end_point, httpToJson, Return, User} from "./Api";
 import {ImageMapContext, PainValue} from "./MainPage";
+import {eq} from "./Util";
 
 type Props = {
   open: boolean;
@@ -14,24 +15,39 @@ type Props = {
 };
 
 export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) => {
-  const [user, setUser] = useState({
-    name: '',
-    description: '',
+  const [editingUser, setEditingUser] = useState<{ name: string, description: string }>(() => {
+    const localStorageMyUser = localStorage.getItem(localStorageKey.myUser);
+    if (!localStorageMyUser) {
+      return {
+        name: '',
+        description: '',
+      }
+    }
+    return JSON.parse(localStorageMyUser);
   });
+  const [user, setUser] = useState(editingUser);
   const [editingPains, setEditingPains] = useState('');
 
   const { userMap } = useContext(ImageMapContext);
 
   const apply = async (value: { name: string, description: string }) => {
-    return await fetch(`${end_point}/user/create_user`, {
+    const res: Return = await fetch(`${end_point}/user/create_user`, {
       method: "PUT",
       headers: {Authorization: "HelloWorld"},
       body: JSON.stringify(value)
     }).then(httpToJson);
+    setUser(value);
+    return res;
   };
 
   const handleClose = () => {
-    apply(user);
+    (async () => {
+      if (eq(user, editingUser)) return;
+
+      await apply(editingUser);
+      localStorage.setItem(localStorageKey.myUser, JSON.stringify(editingUser));
+    })();
+
     onChangePains(JSON.parse(editingPains));
     onClose();
   };
@@ -42,7 +58,7 @@ export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) =>
       if(!Object.entries(userMap).length) return;
 
       // localStorageから取得できてれば、ここを通らない。
-      if(user.name || user.description) return;
+      if(editingUser.name || editingUser.description) return;
 
       const res: Return = await apply({name: '', description: ''});
       const dummyMyUser: User = await fetch(`${end_point}/user/${res.id}`, {
@@ -56,7 +72,7 @@ export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) =>
         name: myUser.name,
         description: myUser.description,
       };
-      setUser(myUserValue);
+      setEditingUser(myUserValue);
       await apply(myUserValue);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,22 +86,13 @@ export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) =>
       }
     };
     document.addEventListener('keyup', handleKeyup, false);
-
-    // ユーザー初期値
-    const localStorageMyUser = localStorage.getItem(localStorageKey.myUser);
-    if (localStorageMyUser) {
-      setUser(JSON.parse(localStorageMyUser));
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if(!user.name) return;
-    if(!user.description) return;
-
-    localStorage.setItem(localStorageKey.myUser, JSON.stringify(user));
+    setEditingUser(user)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [open]);
 
 
   useEffect(() => {
@@ -110,9 +117,9 @@ export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) =>
                   name="name"
                   id="SettingsOverlay_name"
                   type="text"
-                  value={user.name}
+                  value={editingUser.name}
                   onChange={e => {
-                    setUser(prev => ({...prev, name: e.target.value}));
+                    setEditingUser(prev => ({...prev, name: e.target.value}));
                   }}
                 />
               </div>
@@ -123,9 +130,9 @@ export const SettingsOverlay = ({open, onClose, pains, onChangePains}: Props) =>
                   id="SettingsOverlay_description"
                   cols={30}
                   rows={5}
-                  value={user.description}
+                  value={editingUser.description}
                   onChange={e => {
-                    setUser(prev => ({...prev, description: e.target.value}));
+                    setEditingUser(prev => ({...prev, description: e.target.value}));
                   }}
                 />
               </div>
